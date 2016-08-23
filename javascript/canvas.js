@@ -23,7 +23,6 @@ var rightPressed = false;
 var leftPressed = false;
 
 
-var x;
 var snoodSize = 25;
 var snoodX = gameCanvas.width / 2;
 var snoodY = gameCanvas.height;
