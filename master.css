@@ -1,0 +1,35 @@
+canvas {
+  background: #eee;
+  display: none;
+}
+
+.game-canvas {
+  border: 2px solid grey;
+  /*margin-top: 30px;*/
+  width: 725px;
+  /*margin: auto;*/
+  display: block;
+  float: left;
+  position: relative;
+}
+
+.score-canvas {
+  border: 2px solid grey;
+  display: block;
+  float: right;
+  height: 500px;
+  width: 200px;
+}
+
+.game-content {
+  padding-top: 10px;
+  width: 1000px;
+  height: auto;
+  margin: auto;
+}
+
+.group:after {
+  content: "";
+  clear: both;
+  display: block;
+}
