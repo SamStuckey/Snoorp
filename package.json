@@ -1,5 +1,5 @@
 {
-  "name": "Snood",
+  "name": "snoorp",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SamStuckey/Snood.git"
+    "url": "git+https://github.com/SamStuckey/snoorp.git"
   },
   "engines": {
     "node": "6.2.2",
@@ -22,7 +22,7 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/SamStuckey/Snood/issues"
+    "url": "https://github.com/SamStuckey/snoorp/issues"
   },
-  "homepage": "https://github.com/SamStuckey/Snood#readme"
+  "homepage": "https://github.com/SamStuckey/snoorp#readme"
 }

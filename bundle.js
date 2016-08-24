@@ -44,567 +44,584 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
-	var Cannon = __webpack_require__(1);
+	var Game = __webpack_require__(1);
 	
-	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00','#FAFA00'];
-	var launchSnoodColor = randomColor();
-	
-	document.addEventListener("keydown", keyDownHandler, false);
-	document.addEventListener("keyup", keyUpHandler, false);
-	
-	var gameCanvas = document.getElementById("gameCanvas");
-	var scoreCanvas = document.getElementById("scoreCanvas");
-	var ctxScore = scoreCanvas.getContext("2d");
-	var ctx = gameCanvas.getContext("2d");
-	var cannonHeight = 70;
-	var cannonWidth = 60;
-	
-	// upper left corner of cannon
-	var cannonX = (gameCanvas.width - cannonWidth) / 2;
-	var cannonY = gameCanvas.height - cannonHeight;
-	
-	var cannonAngle = 0;
-	var rightPressed = false;
-	var leftPressed = false;
-	
-	var snoodSize = 25;
-	var snoodX = gameCanvas.width / 2;
-	var snoodY = gameCanvas.height;
-	var snoodVX = 0;
-	var snoodVY = 0;
-	var snoodSpeed = -800;
-	var launched = false;
-	var score = 0;
-	var downShift = 0;
-	var numberOfShots = 0;
-	var enemyColumnCount = 3;
-	var enemyRowCount = (gameCanvas.width - snoodSize) / (snoodSize * 2);
-	var enemyOffset = snoodSize * 2;
-	
-	var initialized = false;
-	var gameLost = false;
-	var gameWon = false;
-	
-	var anchored = [];
-	
-	function resetGame() {
-	  cannonAngle = 0;
-	  initialized = false;
-	  gameLost = false;
-	  gameWon = false;
-	  snoodVX = 0;
-	  snoodVY = 0;
-	  launched = false;
-	  score = 0;
-	  downShift = 0;
-	  numberOfShots = 0;
-	  enemies = [];
-	  createEnemies();
-	}
-	
-	// Create enemies
-	var enemies = [];
-	function createEnemies() {
-	  for (var c = 0; c < enemyColumnCount; c++) {
-	    enemies[c] = [];
-	    for (var r = 0; r < enemyRowCount; r++) {
-	      var snood = { x: 0, y: 0, alive: true, color: null, col: c, row: r };
-	      enemies[c][r] = snood;
-	      anchored.push(snood);
-	    }
-	  }
-	}
-	
-	createEnemies();
-	
-	function pressDown() {
-	  downShift += snoodSize * 2;
-	  numberOfShots = 0;
-	}
-	
-	function animateDrop() {
-	  enemies.forEach(function (row) {
-	    row.forEach(function (snood) {
-	      if (snood.alive) {
-	        if (!anchored.includes(snood)) {
-	          snood.color = "#000000";
-	        }
-	      }
-	      //       if (snood.y > gameCanvas.height) {
-	      //         snood.alive = false;
-	      //       }
-	      //
-	      //       if (!snood.floating &&
-	      //
-	      //         adjacentSnoods(snood).length === 0) {
-	      //         enemies[snood.col][snood.row] = {
-	      //           x: 0, y: 0, alive: false, color: null, col: snood.col, row: snood.row, floating: false
-	      //         };
-	      //         snood.floating = true;
-	      //         snood.col = null;
-	      //         snood.row = null;
-	      //       }
-	      //
-	      //       if (snood.floating) {
-	      //         snood.y += 10;
-	      //         // console.log(snood);
-	      //       }
-	      //     }
-	    });
-	  });
-	}
-	
-	function addSnood(targetCol, targetRow, targetSnood) {
-	  var left, right;
-	  if (targetCol % 2 === 0) {
-	    left = targetRow;
-	    right = targetRow + 1;
-	  } else {
-	    left = targetRow - 1;
-	    right = targetRow;
-	  }
-	
-	  var vertPos;
-	  if (snoodY - targetSnood.y > 10) {
-	    vertPos = targetCol + 1; // below
-	  } else if (snoodY - targetSnood.y < 10 && snoodY - targetSnood.y > -10) {
-	    vertPos = targetCol; // on the same level
-	    left = targetRow - 1;
-	    right = targetRow + 1;
-	  } else {
-	    vertPos = targetCol - 1; // above
-	  }
-	
-	  var horzPos = snoodX - targetSnood.x > 0 ? right : left;
-	  if (!enemies[vertPos]) {
-	    createDummyRowWith(vertPos, horzPos);
-	  } else {
-	    enemies[vertPos][horzPos] = {
-	      x: 0,
-	      y: 0,
-	      alive: true,
-	      color: launchSnoodColor,
-	      col: vertPos,
-	      row: horzPos
-	    };
-	  }
-	
-	  var launchSnood = enemies[vertPos][horzPos];
-	  var matches = adjacentMatches(launchSnood);
-	  if (matches.length > 2) {
-	    destroySnoods(matches);
-	  }
-	}
-	
-	function adjacentMatches(matchSnood, existingMatches) {
-	  if (!existingMatches) {
-	    existingMatches = [];
-	  }
-	
-	  // find all touching snoods of the same color
-	  var matches = adjacentSnoods(matchSnood).filter(function (snood) {
-	    if (snood.color === matchSnood.color) {
-	      return snood;
-	    }
-	  });
-	
-	  var newMatches = filterDoubles(matches, existingMatches);
-	  // if there are no new matches, return back through the stack
-	  if (newMatches.length === 0) {
-	    return [];
-	  }
-	
-	  // recusively check all new matches for their new matches and combine
-	  var allMatches = newMatches.concat(existingMatches);
-	  newMatches.forEach(function (snood) {
-	    newMatches = newMatches.concat(adjacentMatches(snood, allMatches));
-	  });
-	
-	  return newMatches;
-	}
-	
-	function adjacentSnoods(snood) {
-	  var targetCol = snood.col;
-	  var targetRow = snood.row;
-	  var adjustedAdjacent;
-	  if (targetCol % 2 !== 0) {
-	    adjustedAdjacent = [{ col: targetCol - 1, row: targetRow - 1 }, // upper left
-	    { col: targetCol + 1, row: targetRow - 1 }];
-	  } else {
-	    adjustedAdjacent = [{ col: targetCol - 1, row: targetRow + 1 }, // upper right
-	    { col: targetCol + 1, row: targetRow + 1 } // bottom right
-	    ];
-	  }
-	
-	  var alwaysAdjacent = [{ col: targetCol, row: targetRow + 1 }, // right
-	  { col: targetCol, row: targetRow - 1 }, // left
-	  { col: targetCol - 1, row: targetRow }, // above
-	  { col: targetCol + 1, row: targetRow }];
-	
-	  var adjacentPositions = alwaysAdjacent.concat(adjustedAdjacent);
-	  var snoods = adjacentPositions.map(function (pos) {
-	    if (enemies[pos.col] && enemies[pos.col][pos.row] && enemies[pos.col][pos.row].alive) {
-	      return enemies[pos.col][pos.row];
-	    }
-	  });
-	
-	  return snoods.filter(function (snood) {
-	    if (snood) {
-	      return snood;
-	    }
-	  });
-	}
-	
-	function baselineCollisionDetection() {
-	  if (snoodY - snoodSize + 1 <= 0 + downShift) {
-	    var row = Math.round(snoodX / (snoodSize * 2) - 1);
-	    enemies[0][row] = {
-	      x: 0,
-	      y: 0,
-	      color: launchSnoodColor,
-	      alive: true,
-	      col: 0,
-	      row: row
-	    };
-	    resetLaunchSnood();
-	  }
-	}
-	
-	function collisionDetection() {
-	  gameWon = true;
-	
-	  for (var col = 0; col < enemies.length; col++) {
-	    for (var row = 0; row < enemyRowCount; row++) {
-	      var target = enemies[col][row];
-	
-	      if (target.y + snoodSize > gameCanvas.height - 100) {
-	        gameLost = true;
-	      }
-	
-	      if (target.alive) {
-	        gameWon = false;
-	        if (snoodX + snoodSize > target.x - snoodSize && snoodX - snoodSize < target.x + snoodSize && snoodY + snoodSize > target.y - snoodSize && snoodY - snoodSize < target.y + snoodSize) {
-	
-	          addSnood(col, row, target);
-	          resetLaunchSnood();
-	          return;
-	        }
-	      }
-	    }
-	  }
-	}
-	
-	function destroySnoods(snoodsToDelete) {
-	  var count = 0;
-	  var multiplier = 0;
-	  snoodsToDelete.forEach(function (snood) {
-	    snood.alive = false;
-	    snood.color = null;
-	    count += 1;
-	    multiplier += 1;
-	  });
-	
-	  // adds 10 points per snood, multiles by 2 for each additional snood
-	  score = score + count * 10 * 2;
-	  dropHangingSnoods();
-	}
-	
-	function createDummyRowWith(colPos, rowPos) {
-	  var row = [];
-	  for (var r = 0; r < enemyRowCount; r++) {
-	    if (r === rowPos) {
-	      row.push({
-	        x: 0,
-	        y: 0,
-	        alive: true,
-	        color: launchSnoodColor,
-	        col: colPos,
-	        row: rowPos
-	      }); // new live snood
-	    } else {
-	      row.push({
-	        x: 0,
-	        y: 0,
-	        alive: false,
-	        color: null,
-	        col: colPos,
-	        row: rowPos
-	      }); // blank sentinel
-	    }
-	  }
-	  enemies.push(row);
-	}
-	
-	function checkGameOver() {
-	  if (gameWon) {
-	    alert("You Win!!!!");
-	    resetGame();
-	  } else if (gameLost) {
-	    alert("You lose...");
-	    resetGame();
-	  }
-	}
-	
-	function convertToRads(deg) {
-	  return deg * Math.PI / 180;
-	}
-	
-	function draw() {
-	  // limit cannon movement
-	  ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-	  ctxScore.clearRect(0, 0, 200, 500);
-	  if (rightPressed) {
-	    if (cannonAngle < 70) {
-	      cannonAngle += 1;
-	    }
-	  } else if (leftPressed) {
-	    if (cannonAngle > -70) {
-	      cannonAngle -= 1;
-	    }
-	  }
-	
-	  if (snoodX - snoodSize <= 0 || snoodX + snoodSize >= gameCanvas.width) {
-	    snoodVX = snoodVX * -1;
-	  }
-	
-	  drawEnemies();
-	  drawCannonRot();
-	  drawCannonBase();
-	  drawLaunchSnood();
-	  collisionDetection();
-	  baselineCollisionDetection();
-	  // animateDrop();
-	  drawScore();
-	  drawScoreLabels();
-	  // checkGameOver();
-	}
-	
-	function drawCannon() {
-	  ctx.beginPath();
-	  ctx.rect(cannonX, cannonY, cannonWidth, cannonHeight);
-	  ctx.fillStyle = "#0095DD";
-	  ctx.fill();
-	  ctx.closePath();
-	}
-	
-	function drawCannonBase() {
-	  ctx.beginPath();
-	  ctx.arc(gameCanvas.width / 2, gameCanvas.height, 50, 0, Math.PI * 2);
-	  ctx.fillStyle = "#0095DD";
-	  ctx.fill();
-	  ctx.closePath();
-	}
-	
-	function drawCannonRot() {
-	  var rad = convertToRads(cannonAngle);
-	  // find the pivot point
-	  var cannonCenter = gameCanvas.width / 2;
-	  var cannonBase = gameCanvas.height;
-	  // adjust for gameCanvas translation to put cannon back on the page
-	  cannonX = -cannonWidth / 2;
-	  cannonY = -cannonHeight;
-	  // set ctx to the bottom middle of the cannon
-	  ctx.translate(cannonCenter, cannonBase);
-	  //rotate the gameCanvas
-	  ctx.rotate(rad);
-	
-	  drawCannon();
-	  // reset the gameCanvas
-	  ctx.rotate(-rad);
-	  ctx.translate(-cannonCenter, -cannonBase);
-	}
-	
-	function drawLaunchSnood() {
-	  snoodX += snoodVX;
-	  snoodY += snoodVY;
-	
-	  ctx.beginPath();
-	  ctx.arc(snoodX, snoodY, snoodSize, 0, Math.PI * 2);
-	  ctx.fillStyle = launchSnoodColor;
-	  ctx.fill();
-	  ctx.closePath();
-	}
-	
-	function drawEnemies() {
-	  for (var c = 0; c < enemies.length; c++) {
-	    for (var r = 0; r < enemyRowCount; r++) {
-	      var snood = enemies[c][r];
-	      if (snood.alive) {
-	        if (!initialized) {
-	          snood.color = randomColor(snood.x, snood.y);
-	        }
-	        snood.x = r * (snoodSize * 2) + snoodSize;
-	        snood.y = c * (snoodSize * 2) + downShift + snoodSize;
-	        if (c % 2 === 0) {
-	          snood.x += 25;
-	        }
-	
-	        ctx.beginPath();
-	        ctx.arc(snood.x, snood.y, snoodSize, 0, Math.PI * 2);
-	        ctx.fillStyle = snood.color;
-	        ctx.fill();
-	        ctx.closePath();
-	      }
-	    }
-	  }
-	  initialized = true;
-	}
-	
-	function drawScore() {
-	  ctxScore.translate(100, 0);
-	  ctxScore.font = "60px sans-serif";
-	  ctxScore.textAlign = "center";
-	  ctxScore.fillText(score, 0, 100);
-	  ctxScore.translate(-100, 0);
-	}
-	
-	function drawScoreLabels() {
-	  ctxScore.translate(100, 0);
-	  ctxScore.font = "40px comic-sans";
-	  ctxScore.textAlign = "center";
-	  ctxScore.fillText("score", 0, 40);
-	  ctxScore.translate(-100, 0);
-	}
-	
-	function dropHangingSnoods() {
-	  var checked = [];
-	  enemies.forEach(function (row) {
-	    row.forEach(function (snood) {
-	      if (!checked.includes(snood)) {
-	        var cluster = getCluster(snood);
-	        var anchored = cluster.some(function (clusterSnood) {
-	          return clusterSnood.col === 0;
-	        });
-	
-	        if (!anchored) {
-	          cluster.forEach(function (snood) {
-	            return snood.color = "#000000";
-	          });
-	        }
-	        checked = checked.concat(cluster);
-	      }
-	    });
-	    // anchored = [];
-	    // enemies[0].forEach((baseSnood) => {
-	    //   // debugger
-	    //   if (!anchored.includes(baseSnood)) {
-	    //     anchored.concat(getCluster(baseSnood));
-	    //   }
-	    // });
-	  });
-	}
-	
-	function getCluster(snood, included) {
-	  included = included || [];
-	  var adjSnoods = adjacentSnoods(snood);
-	  var newSnoods = filterDoubles(adjSnoods, included);
-	  if (newSnoods.length === 0) {
-	    return included;
-	  }
-	  included = included.concat(newSnoods);
-	
-	  var allSnoods = [];
-	  newSnoods.forEach(function (newSnood) {
-	    allSnoods = allSnoods.concat(getCluster(newSnood, included));
-	  });
-	  return allSnoods;
-	}
-	
-	// function isFreeFloating (snood, included) {
-	//   if (!included) { included = []; }
-	//   included.push(snood);
-	//
-	//   var allSnoodResponses = ['nope'];
-	//   debugger
-	//   if (snood.col === 0) {
-	//     allSnoodResponses = ['anchored'];
-	//   } else {
-	//     var adjSnoods = adjacentSnoods(snood);
-	//     var newSnoods = filterDoubles(adjSnoods, included);
-	//     newSnoods.forEach((adjSnood) => {
-	//       allSnoodResponses.concat(isFreeFloating(adjSnood, included));
-	//       // if (!allSnoodResponses) { return false; }
-	//     });
-	//   }
-	//   debugger
-	//   return allSnoodResponses;
-	// }
-	
-	function fireSnood() {
-	  launched = true;
-	  var rad = convertToRads(cannonAngle + 90);
-	  snoodVX = Math.cos(rad) * snoodSpeed / 60;
-	  snoodVY = Math.sin(rad) * snoodSpeed / 60;
-	  numberOfShots += 1;
-	}
-	
-	function keyDownHandler(e) {
-	  if (e.keyCode == 39) {
-	    // right arrow
-	    rightPressed = true;
-	  } else if (e.keyCode == 37) {
-	    // left arrow
-	    leftPressed = true;
-	  } else if (e.keyCode == 32) {
-	    // spacebar launcher
-	    fireSnood();
-	  }
-	}
-	
-	function filterDoubles(matches, existingMatches) {
-	  return matches.filter(function (newMatch) {
-	    var repeat;
-	    existingMatches.forEach(function (oldMatch) {
-	      if (oldMatch.col === newMatch.col && oldMatch.row === newMatch.row) {
-	        repeat = true;
-	      }
-	    });
-	
-	    if (!repeat) {
-	      return newMatch;
-	    }
-	  });
-	}
-	
-	function keyUpHandler(e) {
-	  if (e.keyCode == 39) {
-	    rightPressed = false;
-	  } else if (e.keyCode == 37) {
-	    leftPressed = false;
-	  }
-	}
-	
-	function randomColor() {
-	  return COLORS[Math.floor(Math.random() * COLORS.length)];
-	}
-	
-	function resetLaunchSnood() {
-	  snoodVX = 0;
-	  snoodVY = 0;
-	  snoodX = gameCanvas.width / 2;
-	  snoodY = gameCanvas.height;
-	  launched = false;
-	  launchSnoodColor = randomColor();
-	  if (numberOfShots === 10) {
-	    pressDown();
-	  }
-	}
-	
-	setInterval(draw, 10);
+	document.addEventListener("DOMContentLoaded", function () {
+	  var game = new Game();
+	  game.play();
+	});
 
 /***/ },
 /* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Cannon = __webpack_require__(2);
+	var Board = __webpack_require__(3);
+	var Snoorp = __webpack_require__(4);
+	
+	var gameCanvas = document.getElementById("gameCanvas");
+	var scoreCanvas = document.getElementById("scoreCanvas");
+	var ctx = gameCanvas.getContext("2d");
+	var ctxScore = scoreCanvas.getContext("2d");
+	var snoorpSize = 25;
+	
+	var score = 0;
+	var numShots = 0;
+	
+	var Game = function () {
+	  function Game() {
+	    _classCallCheck(this, Game);
+	
+	    this.launchSnoorp = this.newSnoorp();
+	    this.cannon = this.newCannon();
+	    this.board = this.newBoard();
+	  }
+	
+	  _createClass(Game, [{
+	    key: 'newBoard',
+	    value: function newBoard() {
+	      return new Board({
+	        canvas: gameCanvas,
+	        ctx: ctx,
+	        score: score,
+	        launchSnoorp: this.launchSnoorp,
+	        snoorpSize: snoorpSize
+	      });
+	    }
+	  }, {
+	    key: 'newSnoorp',
+	    value: function newSnoorp() {
+	      return new Snoorp({
+	        x: gameCanvas.width / 2,
+	        y: gameCanvas.height
+	      });
+	    }
+	  }, {
+	    key: 'newCannon',
+	    value: function newCannon() {
+	      return new Cannon({
+	        ctx: ctx,
+	        numShots: numShots,
+	        launchSnoorp: this.launchSnoorp
+	      });
+	    }
+	  }, {
+	    key: 'drawScore',
+	    value: function drawScore() {
+	      ctxScore.translate(100, 0);
+	      ctxScore.font = "60px sans-serif";
+	      ctxScore.textAlign = "center";
+	      ctxScore.fillText(score, 0, 100);
+	
+	      // draw header
+	      ctxScore.font = "40px sans-serif";
+	      ctxScore.fillText("score", 0, 40);
+	      ctxScore.translate(-100, 0);
+	    }
+	  }, {
+	    key: 'run',
+	    value: function run() {
+	      ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+	      ctxScore.clearRect(0, 0, 200, 500);
+	
+	      this.cannon.drawCannonRot();
+	      this.board.drawBoard();
+	      this.drawScore();
+	      // checkGameOver();
+	    }
+	  }, {
+	    key: 'play',
+	    value: function play() {
+	      document.addEventListener("keydown", this.cannon.keyDownHandler, false);
+	      document.addEventListener("keyup", this.cannon.keyUpHandler, false);
+	      setInterval(this.run.bind(this), 10);
+	    }
+	  }]);
+	
+	  return Game;
+	}();
+	
+	module.exports = Game;
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var cannonHeight = 70;
+	var cannonWidth = 60;
+	var launchSpeed = -800;
+	
+	var Cannon = function () {
+	  function Cannon(o) {
+	    _classCallCheck(this, Cannon);
+	
+	    this.ctx = o.ctx;
+	    this.angle = 0;
+	    this.cannonX = (gameCanvas.width - cannonWidth) / 2;
+	    this.cannonY = gameCanvas.height - cannonHeight;
+	    this.launched = false;
+	    this.launchSnoorp = o.launchSnoorp;
+	    this.leftPressed = false;
+	    this.numShots = o.numShots;
+	    this.rightPressed = false;
+	  }
+	
+	  _createClass(Cannon, [{
+	    key: "drawCannon",
+	    value: function drawCannon() {
+	      this.updateAngle();
+	      this.ctx.beginPath();
+	      this.ctx.rect(this.cannonX, this.cannonY, cannonWidth, cannonHeight);
+	      this.ctx.fillStyle = "#0095DD";
+	      this.ctx.fill();
+	      this.ctx.closePath();
+	    }
+	  }, {
+	    key: "drawCannonRot",
+	    value: function drawCannonRot() {
+	      var rad = this.convertToRads(this.angle);
+	      // find the pivot point
+	      var cannonCenter = gameCanvas.width / 2;
+	      var cannonBase = gameCanvas.height;
+	      // adjust for gameCanvas translation to put cannon back on the page
+	      this.cannonX = -cannonWidth / 2;
+	      this.cannonY = -cannonHeight;
+	      //rotate, draw, rotate back
+	      this.ctx.translate(cannonCenter, cannonBase);
+	      this.ctx.rotate(rad);
+	      this.drawCannon();
+	      this.ctx.rotate(-rad);
+	      this.ctx.translate(-cannonCenter, -cannonBase);
+	      this.drawCannonBase();
+	    }
+	  }, {
+	    key: "drawCannonBase",
+	    value: function drawCannonBase() {
+	      this.ctx.beginPath();
+	      this.ctx.arc(gameCanvas.width / 2, gameCanvas.height, 50, 0, Math.PI * 2);
+	      this.ctx.fillStyle = "#0095DD";
+	      this.ctx.fill();
+	      this.ctx.closePath();
+	    }
+	  }, {
+	    key: "convertToRads",
+	    value: function convertToRads(deg) {
+	      return deg * Math.PI / 180;
+	    }
+	  }, {
+	    key: "fireSnoorp",
+	    value: function fireSnoorp() {
+	      var rad = convertToRads(this.angle + 90);
+	      this.launched = true;
+	      this.launchSnoorp.vx = Math.cos(rad) * snoorpSpeed / 60;
+	      this.launchSnoorp.vy = Math.sin(rad) * snoorpSpeed / 60;
+	      this.numShots += 1;
+	    }
+	  }, {
+	    key: "keyDownHandler",
+	    value: function keyDownHandler(e) {
+	      switch (e.keyCode) {
+	        case 39:
+	          // right arrow
+	          this.rightPressed = true;
+	          break;
+	        case 37:
+	          // left arrow
+	          this.leftPressed = true;
+	          break;
+	        case 32:
+	          // spacebar
+	          if (!this.launched) {
+	            this.fireSnoorp();
+	          }
+	      }
+	    }
+	  }, {
+	    key: "keyUpHandler",
+	    value: function keyUpHandler(e) {
+	      if (e.keyCode == 39) {
+	        this.rightPressed = false;
+	      } else if (e.keyCode == 37) {
+	        this.leftPressed = false;
+	      }
+	    }
+	  }, {
+	    key: "updateAngle",
+	    value: function updateAngle() {
+	      if (this.rightPressed) {
+	        if (angle < 70) {
+	          angle += 1;
+	        }
+	      } else if (this.leftPressed) {
+	        if (angle > -70) {
+	          angle -= 1;
+	        }
+	      }
+	    }
+	  }]);
+	
+	  return Cannon;
+	}();
+	
+	module.exports = Cannon;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Snoorp = __webpack_require__(4);
+	
+	var enemyColumnCount = 4;
+	var initialized = false;
+	
+	var Board = function () {
+	  function Board(o) {
+	    _classCallCheck(this, Board);
+	
+	    this.canvas = o.canvas;
+	    this.ctx = o.ctx;
+	    this.launchSnoorp = o.launchSnoorp;
+	    this.score = o.score;
+	    this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
+	    this.enemies = [];
+	    this.downShift = 0;
+	    this.snoorpSize = o.snoorpSize;
+	
+	    this.addEnemies();
+	  }
+	
+	  _createClass(Board, [{
+	    key: 'addEnemies',
+	    value: function addEnemies() {
+	      for (var col = 0; col < enemyColumnCount; col++) {
+	        this.enemies[col] = [];
+	        for (var _row = 0; _row < this.enemyRowCount; _row++) {
+	          var options = { alive: true, visible: true, col: col, row: _row };
+	          this.enemies[col][_row] = new Snoorp(options);
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'addLaunchSnoorpToEnemies',
+	    value: function addLaunchSnoorpToEnemies(target) {
+	      var LeftRightVals = this.adjustedForColVal(target);
+	      var newPos = this.getAttatchPosition(LeftRightVals, target);
+	      this.launchSnoorp.col = newPos.col;
+	      this.launchSnoorp.row = newPos.row;
+	
+	      if (this.board.enemies()[newPos.col]) {
+	        this.board.enemies()[newPos.col][newPos.row] = this.launchSnoorp;
+	      } else {
+	        this.putInNewRow();
+	      }
+	    }
+	  }, {
+	    key: 'putInNewRow',
+	    value: function putInNewRow() {
+	      var newRow = [];
+	      for (var r = 0; r < this.enemyRowCount; r++) {
+	        if (r === this.launchSnoorp.rowPos) {
+	          row.push(this.launchSnoorp);
+	        } else {
+	          row.push(new Snoorp()); // blank sentinel
+	        }
+	      }
+	      enemies.push(row);
+	    }
+	  }, {
+	    key: 'destroySnoorps',
+	    value: function destroySnoorps() {
+	      var cluster = this.launchSnoorp.adjacentMatches();
+	
+	      if (cluster.length > 2) {
+	        var count = 0;
+	        var multiplier = 0;
+	
+	        cluster.forEach(function (snoorp) {
+	          snoorp.alive = false;
+	          snoorp.color = null;
+	          count += 1;
+	          multiplier += 1;
+	        });
+	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
+	        this.score += count * 10 * 2;
+	        this.dropHangingSnoorps();
+	      }
+	    }
+	  }, {
+	    key: 'detectCollsion',
+	    value: function detectCollsion(target) {
+	      if ( // collision with other snoorp
+	      this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
+	        this.addLaunchSnoorpToEnemies(target);
+	        this.destroySnoorps();
+	      } else if ( // collision with the ceiling
+	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
+	        var _row2 = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+	        enemies[0][_row2] = this.launchSnoorp;
+	      }
+	      this.resetLaunchSnoorp();
+	    }
+	  }, {
+	    key: 'drawBoard',
+	    value: function drawBoard() {
+	      this.monitorEnemies();
+	      this.drawLaunchSnoorp();
+	    }
+	  }, {
+	    key: 'drawEnemy',
+	    value: function drawEnemy(snoorp) {
+	      if (snoorp.alive && !snoorp.falling) {
+	        snoorp.x = snoorp.x || snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
+	        snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
+	        // create row offset
+	        if (snoorp.col % 2 === 0 && !initialized) {
+	          snoorp.x += 25;
+	        }
+	
+	        this.ctx.beginPath();
+	        this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
+	        this.ctx.fillStyle = snoorp.color;
+	        this.ctx.fill();
+	        this.ctx.closePath();
+	      }
+	    }
+	  }, {
+	    key: 'drawLaunchSnoorp',
+	    value: function drawLaunchSnoorp() {
+	      // reverse on a wall hit
+	      if (this.launchSnoorp.x - this.snoorpSize <= 0 || this.launchSnoorp.x + this.snoorpSize >= this.canvas.width) {
+	        this.launchSnoorp.vx = this.launchSnoorp.vx * -1;
+	      }
+	
+	      this.launchSnoorp.x += this.launchSnoorp.vx;
+	      this.launchSnoorp.y += this.launchSnoorp.vy;
+	
+	      this.ctx.beginPath();
+	      this.ctx.arc(this.launchSnoorp.x, this.launchSnoorp.y, this.snoorpSize, 0, Math.PI * 2);
+	      this.ctx.fillStyle = this.launchSnoorp.color;
+	      this.ctx.fill();
+	      this.ctx.closePath();
+	    }
+	  }, {
+	    key: 'monitorEnemies',
+	    value: function monitorEnemies() {
+	      for (var col = 0; col < this.enemies.length; col++) {
+	        for (var _row3 = 0; _row3 < this.enemyRowCount; _row3++) {
+	          var target = this.enemies[col][_row3];
+	          if (target.alive) {
+	            this.detectCollsion(target);
+	          }
+	          if (target.falling) {
+	            this.moveFallingSnoorps(target);
+	          }
+	
+	          this.drawEnemy(target);
+	        }
+	      }
+	      initialized = true;
+	    }
+	  }, {
+	    key: 'moveFallingSnoorps',
+	    value: function moveFallingSnoorps(snoorp) {
+	      if (snoorp.y < this.canvas.height) {
+	        snoorp.y *= 1.2;
+	      } else {
+	        snoorp.alive = false;
+	        snoorp.falling = false;
+	      }
+	    }
+	  }, {
+	    key: 'getAttatchPosition',
+	    value: function getAttatchPosition(lr, target) {
+	      var col = void 0,
+	          row = void 0;
+	      if (this.launchSnoorp.y - target.y > 10) {
+	        col = target.col + 1; // below
+	      } else if (this.launchSnoorp.y - target.y < 10 && this.launchSnoorp.y - target.y > -10) {
+	        col = target.col; // on the same level
+	      } else {
+	        col = target.col - 1; // above
+	      }
+	
+	      row = this.launchSnoorp.x - target.x > 0 ? lr.right : lr.left;
+	
+	      return { col: col, row: row };
+	    }
+	  }, {
+	    key: 'pressDown',
+	    value: function pressDown() {
+	      this.downShift += this.snoorpSize * 2;
+	    }
+	  }, {
+	    key: 'resetLaunchSnoorp',
+	    value: function resetLaunchSnoorp() {
+	      this.launchSnoorp = new Snoorp({
+	        x: this.canvas.width / 2,
+	        y: this.canvas.height,
+	        visible: true
+	      });
+	    }
+	  }]);
+	
+	  return Board;
+	}();
+	
+	module.exports = Board;
+
+/***/ },
+/* 4 */
 /***/ function(module, exports) {
 
 	'use strict';
 	
-	module.exports = {
-	  bigStuff: function bigStuff() {
-	    console.log('eyyyy');
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00', '#FAFA00'];
+	
+	var Snoorp = function () {
+	  function Snoorp() {
+	    var o = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    _classCallCheck(this, Snoorp);
+	
+	    this.x = o.x || 0;
+	    this.y = o.y || 0;
+	    this.alive = o.alive || false;
+	    this.color = this.randomColor();
+	    this.col = o.col;
+	    this.row = o.row;
+	    this.falling = false;
+	    this.vx = 0;
+	    this.yx = 0;
+	    this.launched = false;
 	  }
-	};
+	
+	  _createClass(Snoorp, [{
+	    key: 'adjustedForColVal',
+	    value: function adjustedForColVal(target) {
+	      var left, right;
+	      if (target.col % 2 === 0) {
+	        left = target.row;
+	        right = target.row + 1;
+	      } else {
+	        left = target.row - 1;
+	        right = target.row;
+	      }
+	
+	      return { left: left, right: right };
+	    }
+	  }, {
+	    key: 'adjacentMatches',
+	    value: function (_adjacentMatches) {
+	      function adjacentMatches(_x) {
+	        return _adjacentMatches.apply(this, arguments);
+	      }
+	
+	      adjacentMatches.toString = function () {
+	        return _adjacentMatches.toString();
+	      };
+	
+	      return adjacentMatches;
+	    }(function (existingMatches) {
+	      if (!existingMatches) {
+	        existingMatches = [];
+	      }
+	
+	      // find all touching snoorps of the same color
+	      var matches = this.adjacentSnoorps().filter(function (snoorp) {
+	        if (snoorp.color === matchsnoorp.color) {
+	          return snoorp;
+	        }
+	      });
+	
+	      var newMatches = filterDoubles(matches, existingMatches);
+	      if (newMatches.length === 0) {
+	        return [];
+	      }
+	
+	      // recusively check all new matches for their new matches and combine
+	      var allMatches = newMatches.concat(existingMatches);
+	      newMatches.forEach(function (snoorp) {
+	        newMatches = newMatches.concat(adjacentMatches(snoorp, allMatches));
+	      });
+	
+	      return newMatches;
+	    })
+	  }, {
+	    key: 'adjacentSnoorps',
+	    value: function adjacentSnoorps() {
+	      var _this = this;
+	
+	      var targetCol = this.col;
+	      var targetRow = this.row;
+	      var lr = adjustedForColVal(snoorp);
+	      adjacent = [{ col: targetCol - 1, row: lr.left }, // upper left
+	      { col: targetCol - 1, row: lr.right }, // upper right
+	      { col: targetCol + 1, row: lr.left }, // bottom left
+	      { col: targetCol + 1, row: lr.right }, // bottom right
+	      { col: targetCol, row: targetRow + 1 }, // right
+	      { col: targetCol, row: targetRow - 1 }, // left
+	      { col: targetCol - 1, row: targetRow }, // above
+	      { col: targetCol + 1, row: targetRow }];
+	
+	      // return an array of snoorps in adjacent possitions
+	      return adjacent.filter(function (pos) {
+	        var enemies = _this.board.enemies();
+	        if (enemies[pos.col] && enemies[pos.col][pos.row] && enemies[pos.col][pos.row].alive) {
+	          return _this.board.enemies[pos.col][pos.row];
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'filterDoubles',
+	    value: function filterDoubles(matches, existingMatches) {
+	      return matches.filter(function (newMatch) {
+	        var repeat;
+	        existingMatches.forEach(function (oldMatch) {
+	          if (newMatch === oldMatch) {
+	            repeat = true;
+	          }
+	        });
+	
+	        if (!repeat) {
+	          return newMatch;
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'randomColor',
+	    value: function randomColor() {
+	      return COLORS[Math.floor(Math.random() * COLORS.length)];
+	    }
+	  }]);
+	
+	  return Snoorp;
+	}();
+	
+	module.exports = Snoorp;
 
 /***/ }
 /******/ ]);
