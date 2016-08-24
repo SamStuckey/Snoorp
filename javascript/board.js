@@ -5,17 +5,17 @@ let initialized = false;
 
 class Board {
   constructor (o) {
-      this.canvas = o.canvas;
-      this.ctx = o.ctx;
-      this.launchSnoorp = o.launchSnoorp;
-      this.score = o.score;
-      this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
-      this.enemies = [];
-      this.downShift = 0;
-      this.snoorpSize = o.snoorpSize;
+    this.canvas = o.canvas;
+    this.ctx = o.ctx;
+    this.launchSnoorp = o.launchSnoorp;
+    this.score = o.score;
+    this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
+    this.enemies = [];
+    this.downShift = 0;
+    this.snoorpSize = o.snoorpSize;
 
-      this.addEnemies();
-    }
+    this.addEnemies();
+  }
 
   addEnemies () {
     for(let col = 0; col < enemyColumnCount; col++) {

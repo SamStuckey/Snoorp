@@ -10,7 +10,7 @@ class Snoorp {
     this.row = o.row;
     this.falling = false;
     this.vx = 0;
-    this.yx = 0;
+    this.vy = 0;
     this.launched = false;
   }
 
