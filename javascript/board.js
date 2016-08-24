@@ -27,7 +27,7 @@ class Board {
     }
   }
 
-    addLaunchSnoorpToEnemies (target) {
+  addLaunchSnoorpToEnemies (target) {
     const LeftRightVals = this.adjustedForColVal(target);
     const newPos = this.getAttatchPosition(LeftRightVals, target);
     this.launchSnoorp.col = newPos.col;
@@ -71,7 +71,7 @@ class Board {
     }
   }
 
-    detectCollsion (target) {
+  detectCollsion (target) {
     if (              // collision with other snoorp
       this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize &&
       this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize &&
@@ -80,13 +80,14 @@ class Board {
     ) {
       this.addLaunchSnoorpToEnemies(target);
       this.destroySnoorps();
+      this.resetLaunchSnoorp();
     } else if (      // collision with the ceiling
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
       const row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
       enemies[0][row] = this.launchSnoorp;
+      this.resetLaunchSnoorp();
     }
-    this.resetLaunchSnoorp();
   }
 
   drawBoard () {

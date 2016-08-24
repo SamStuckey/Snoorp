@@ -378,12 +378,13 @@
 	      this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
 	        this.addLaunchSnoorpToEnemies(target);
 	        this.destroySnoorps();
+	        this.resetLaunchSnoorp();
 	      } else if ( // collision with the ceiling
 	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
 	        var _row2 = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
 	        enemies[0][_row2] = this.launchSnoorp;
+	        this.resetLaunchSnoorp();
 	      }
-	      this.resetLaunchSnoorp();
 	    }
 	  }, {
 	    key: 'drawBoard',
