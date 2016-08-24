@@ -101,7 +101,8 @@
 	    value: function newSnoorp() {
 	      return new Snoorp({
 	        x: gameCanvas.width / 2,
-	        y: gameCanvas.height
+	        y: gameCanvas.height,
+	        alive: true
 	      });
 	    }
 	  }, {
@@ -140,8 +141,9 @@
 	  }, {
 	    key: 'play',
 	    value: function play() {
-	      document.addEventListener("keydown", this.cannon.keyDownHandler, false);
-	      document.addEventListener("keyup", this.cannon.keyUpHandler, false);
+	      var c = this.cannon;
+	      document.addEventListener("keydown", c.keyDownHandler.bind(c), false);
+	      document.addEventListener("keyup", c.keyUpHandler.bind(c), false);
 	      setInterval(this.run.bind(this), 10);
 	    }
 	  }]);
@@ -225,10 +227,10 @@
 	  }, {
 	    key: "fireSnoorp",
 	    value: function fireSnoorp() {
-	      var rad = convertToRads(this.angle + 90);
+	      var rad = this.convertToRads(this.angle + 90);
 	      this.launched = true;
-	      this.launchSnoorp.vx = Math.cos(rad) * snoorpSpeed / 60;
-	      this.launchSnoorp.vy = Math.sin(rad) * snoorpSpeed / 60;
+	      this.launchSnoorp.vx = Math.cos(rad) * launchSpeed / 60;
+	      this.launchSnoorp.vy = Math.sin(rad) * launchSpeed / 60;
 	      this.numShots += 1;
 	    }
 	  }, {
@@ -248,6 +250,7 @@
 	          if (!this.launched) {
 	            this.fireSnoorp();
 	          }
+	          break;
 	      }
 	    }
 	  }, {
@@ -263,12 +266,12 @@
 	    key: "updateAngle",
 	    value: function updateAngle() {
 	      if (this.rightPressed) {
-	        if (angle < 70) {
-	          angle += 1;
+	        if (this.angle < 70) {
+	          this.angle += 1;
 	        }
 	      } else if (this.leftPressed) {
-	        if (angle > -70) {
-	          angle -= 1;
+	        if (this.angle > -70) {
+	          this.angle -= 1;
 	        }
 	      }
 	    }
@@ -343,7 +346,7 @@
 	        if (r === this.launchSnoorp.rowPos) {
 	          row.push(this.launchSnoorp);
 	        } else {
-	          row.push(new Snoorp()); // blank sentinel
+	          row.push(new Snoorp({ alive: false })); // blank sentinel
 	        }
 	      }
 	      enemies.push(row);
@@ -385,41 +388,44 @@
 	  }, {
 	    key: 'drawBoard',
 	    value: function drawBoard() {
-	      this.monitorEnemies();
 	      this.drawLaunchSnoorp();
+	      this.monitorEnemies();
 	    }
 	  }, {
 	    key: 'drawEnemy',
 	    value: function drawEnemy(snoorp) {
-	      if (snoorp.alive && !snoorp.falling) {
-	        snoorp.x = snoorp.x || snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
-	        snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
-	        // create row offset
-	        if (snoorp.col % 2 === 0 && !initialized) {
-	          snoorp.x += 25;
-	        }
-	
-	        this.ctx.beginPath();
-	        this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
-	        this.ctx.fillStyle = snoorp.color;
-	        this.ctx.fill();
-	        this.ctx.closePath();
+	      snoorp.x = snoorp.x || snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
+	      snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
+	      // create row offset
+	      if (snoorp.col % 2 === 0 && !initialized) {
+	        snoorp.x += 25;
 	      }
+	
+	      this.drawSnoorp(snoorp);
 	    }
 	  }, {
 	    key: 'drawLaunchSnoorp',
 	    value: function drawLaunchSnoorp() {
-	      // reverse on a wall hit
-	      if (this.launchSnoorp.x - this.snoorpSize <= 0 || this.launchSnoorp.x + this.snoorpSize >= this.canvas.width) {
-	        this.launchSnoorp.vx = this.launchSnoorp.vx * -1;
+	      var snoorp = this.launchSnoorp;
+	
+	      // bounce off the wall
+	      var touchingLeft = snoorp.x - this.snoorpSize <= 0;
+	      var touchingRight = snoorp.x + this.snoorpSize >= this.canvas.width;
+	      if (touchingLeft || touchingRight) {
+	        snoorp.vx *= -1;
 	      }
 	
-	      this.launchSnoorp.x += this.launchSnoorp.vx;
-	      this.launchSnoorp.y += this.launchSnoorp.vy;
+	      snoorp.x += snoorp.vx;
+	      snoorp.y += snoorp.vy;
 	
+	      this.drawSnoorp(snoorp);
+	    }
+	  }, {
+	    key: 'drawSnoorp',
+	    value: function drawSnoorp(snoorp) {
 	      this.ctx.beginPath();
-	      this.ctx.arc(this.launchSnoorp.x, this.launchSnoorp.y, this.snoorpSize, 0, Math.PI * 2);
-	      this.ctx.fillStyle = this.launchSnoorp.color;
+	      this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
+	      this.ctx.fillStyle = snoorp.color;
 	      this.ctx.fill();
 	      this.ctx.closePath();
 	    }
@@ -431,12 +437,11 @@
 	          var target = this.enemies[col][_row3];
 	          if (target.alive) {
 	            this.detectCollsion(target);
+	            this.drawEnemy(target);
+	            if (target.falling) {
+	              this.moveFallingSnoorps(target);
+	            }
 	          }
-	          if (target.falling) {
-	            this.moveFallingSnoorps(target);
-	          }
-	
-	          this.drawEnemy(target);
 	        }
 	      }
 	      initialized = true;
@@ -479,7 +484,7 @@
 	      this.launchSnoorp = new Snoorp({
 	        x: this.canvas.width / 2,
 	        y: this.canvas.height,
-	        visible: true
+	        alive: true
 	      });
 	    }
 	  }]);
@@ -509,7 +514,7 @@
 	
 	    this.x = o.x || 0;
 	    this.y = o.y || 0;
-	    this.alive = o.alive || false;
+	    this.alive = o.alive;
 	    this.color = this.randomColor();
 	    this.col = o.col;
 	    this.row = o.row;

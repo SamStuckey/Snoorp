@@ -4,7 +4,7 @@ class Snoorp {
   constructor (o = {}) {
     this.x = o.x || 0;
     this.y = o.y || 0;
-    this.alive = o.alive || false;
+    this.alive = o.alive;
     this.color = this.randomColor();
     this.col = o.col;
     this.row = o.row;

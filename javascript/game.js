@@ -32,6 +32,7 @@ class Game {
     return new Snoorp({
       x: (gameCanvas.width / 2),
       y: gameCanvas.height,
+      alive: true
     });
   }
 
@@ -66,8 +67,9 @@ class Game {
   }
 
   play () {
-    document.addEventListener("keydown", this.cannon.keyDownHandler, false);
-    document.addEventListener("keyup", this.cannon.keyUpHandler, false);
+    const c = this.cannon;
+    document.addEventListener("keydown", c.keyDownHandler.bind(c), false);
+    document.addEventListener("keyup", c.keyUpHandler.bind(c), false);
     setInterval(this.run.bind(this), 10);
   }
 }

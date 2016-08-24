@@ -54,10 +54,10 @@ class Cannon {
   }
 
   fireSnoorp () {
-    const rad = convertToRads(this.angle + 90);
+    const rad = this.convertToRads(this.angle + 90);
     this.launched = true;
-    this.launchSnoorp.vx = Math.cos(rad)*snoorpSpeed/60;
-    this.launchSnoorp.vy = Math.sin(rad)*snoorpSpeed/60;
+    this.launchSnoorp.vx = Math.cos(rad)*launchSpeed/60;
+    this.launchSnoorp.vy = Math.sin(rad)*launchSpeed/60;
     this.numShots += 1;
   }
 
@@ -70,9 +70,8 @@ class Cannon {
       this.leftPressed = true;
       break;
       case 32: // spacebar
-      if (!this.launched) {
-        this.fireSnoorp();
-      }
+      if (!this.launched) { this.fireSnoorp(); }
+      break;
     }
   }
 
@@ -87,12 +86,12 @@ class Cannon {
 
   updateAngle () {
     if (this.rightPressed) {
-      if (angle < 70) {
-        angle += 1;
+      if (this.angle < 70) {
+        this.angle += 1;
       }
     } else if (this.leftPressed) {
-      if (angle > -70) {
-        angle -= 1;
+      if (this.angle > -70) {
+        this.angle -= 1;
       }
     }
   }

@@ -46,7 +46,7 @@ class Board {
       if (r === this.launchSnoorp.rowPos) {
         row.push(this.launchSnoorp);
       } else {
-        row.push(new Snoorp()); // blank sentinel
+        row.push(new Snoorp({alive: false})); // blank sentinel
       }
     }
     enemies.push(row);
@@ -90,38 +90,37 @@ class Board {
   }
 
   drawBoard () {
-    this.monitorEnemies();
     this.drawLaunchSnoorp();
+    this.monitorEnemies();
   }
 
-    drawEnemy (snoorp) {
-    if (snoorp.alive && !snoorp.falling) {
-      snoorp.x = snoorp.x || (snoorp.row * (this.snoorpSize * 2)) + this.snoorpSize;
-      snoorp.y = (snoorp.col * (this.snoorpSize * 2) + this.downShift) + this.snoorpSize;
-      // create row offset
-      if (snoorp.col % 2 === 0 && !initialized) { snoorp.x += 25; }
+  drawEnemy (snoorp) {
+    snoorp.x = snoorp.x || (snoorp.row * (this.snoorpSize * 2)) + this.snoorpSize;
+    snoorp.y = (snoorp.col * (this.snoorpSize * 2) + this.downShift) + this.snoorpSize;
+    // create row offset
+    if (snoorp.col % 2 === 0 && !initialized) { snoorp.x += 25; }
 
-      this.ctx.beginPath();
-      this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
-      this.ctx.fillStyle = snoorp.color;
-      this.ctx.fill();
-      this.ctx.closePath();
-    }
+    this.drawSnoorp(snoorp);
   }
 
   drawLaunchSnoorp () {
-    // reverse on a wall hit
-    if (this.launchSnoorp.x - this.snoorpSize <= 0 ||
-      this.launchSnoorp.x + this.snoorpSize >= this.canvas.width) {
-      this.launchSnoorp.vx = this.launchSnoorp.vx * (-1);
-    }
+    const snoorp = this.launchSnoorp;
 
-    this.launchSnoorp.x += this.launchSnoorp.vx;
-    this.launchSnoorp.y += this.launchSnoorp.vy;
+    // bounce off the wall
+    const touchingLeft = snoorp.x - this.snoorpSize <= 0;
+    const touchingRight = snoorp.x + this.snoorpSize >= this.canvas.width;
+    if (touchingLeft || touchingRight) { snoorp.vx *= -1; }
 
+    snoorp.x += snoorp.vx;
+    snoorp.y += snoorp.vy;
+
+    this.drawSnoorp(snoorp);
+  }
+
+  drawSnoorp (snoorp) {
     this.ctx.beginPath();
-    this.ctx.arc(this.launchSnoorp.x, this.launchSnoorp.y, this.snoorpSize, 0, Math.PI*2);
-    this.ctx.fillStyle = this.launchSnoorp.color;
+    this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
+    this.ctx.fillStyle = snoorp.color;
     this.ctx.fill();
     this.ctx.closePath();
   }
@@ -130,10 +129,11 @@ class Board {
     for(let col = 0; col < this.enemies.length; col++) {
       for(let row = 0; row < this.enemyRowCount; row++) {
         const target = this.enemies[col][row];
-        if (target.alive) { this.detectCollsion(target); }
-        if (target.falling) { this.moveFallingSnoorps(target); }
-
-        this.drawEnemy(target);
+        if (target.alive) {
+          this.detectCollsion(target);
+          this.drawEnemy(target);
+          if (target.falling) { this.moveFallingSnoorps(target); }
+        }
       }
     }
     initialized = true;
@@ -172,7 +172,7 @@ class Board {
     this.launchSnoorp = new Snoorp({
       x: (this.canvas.width / 2),
       y: this.canvas.height,
-      visible: true
+      alive: true
     });
   }
 }
