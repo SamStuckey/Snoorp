@@ -108,8 +108,6 @@ class Board {
     // create row offset
     if (snoorp.col % 2 === 0) { snoorp.x += 25; }
 
-    
-
     //drop floating snoorp
     if (snoorp.falling) {
       if (snoorp.y < (this.canvas.height - 50)) {
@@ -185,6 +183,10 @@ class Board {
       newNewSnoorps = newNewSnoorps.concat(this.getCluster(newSnoorp, allSnoorps));
     });
     return newNewSnoorps.concat(allSnoorps);
+  }
+
+  getScore () {
+    return this.score;
   }
 
   isFreeFloating (snoorp, included) {

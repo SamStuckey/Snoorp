@@ -121,7 +121,7 @@
 	      ctxScore.translate(100, 0);
 	      ctxScore.font = "60px sans-serif";
 	      ctxScore.textAlign = "center";
-	      ctxScore.fillText(score, 0, 100);
+	      ctxScore.fillText(this.board.getScore(), 0, 100);
 	
 	      // draw header
 	      ctxScore.font = "40px sans-serif";
@@ -500,6 +500,11 @@
 	        newNewSnoorps = newNewSnoorps.concat(_this2.getCluster(newSnoorp, allSnoorps));
 	      });
 	      return newNewSnoorps.concat(allSnoorps);
+	    }
+	  }, {
+	    key: 'getScore',
+	    value: function getScore() {
+	      return this.score;
 	    }
 	  }, {
 	    key: 'isFreeFloating',

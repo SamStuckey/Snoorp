@@ -1,3 +1,10 @@
+li, h3, h1 {
+  margin: 0;
+  list-style: none;
+  padding: none;
+  font-family: sans-serif;
+}
+
 canvas {
   background: #eee;
   display: none;
@@ -5,9 +12,7 @@ canvas {
 
 .game-canvas {
   border: 2px solid grey;
-  /*margin-top: 30px;*/
   width: 725px;
-  /*margin: auto;*/
   display: block;
   float: left;
   position: relative;
@@ -17,7 +22,7 @@ canvas {
   border: 2px solid grey;
   display: block;
   float: right;
-  height: 500px;
+  height: 120px;
   width: 200px;
 }
 
@@ -32,4 +37,52 @@ canvas {
   content: "";
   clear: both;
   display: block;
+}
+
+.instructions {
+  height: 130px;
+  width: 180px;
+  display: block;
+  float: right;
+  border: 2px solid grey;
+  padding: 30px 10px;
+  background-color: #eee;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.welcome {
+  height: 270px;
+  width: 200px;
+  float: right;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.welcome h3 {
+  font-size: 20px;
+}
+
+.welcome li {
+  display: block;
+  float: left;
+  text-align: center;
+}
+
+.welcome img {
+  left: -30px;
+  transform: translateX(-70px);
+  margin-top: 20px;
+}
+
+h3 {
+
+}
+
+ul {
+  padding: 5px;
+}
+
+li {
+  padding: 5px;
 }

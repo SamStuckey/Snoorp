@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="master.css">
-    <title>Gamedev Canvas Workshop</title>
+    <title>Snoorp</title>
     <style>
     	* { padding: 0; margin: 0; }
     	canvas { background: #eee; display: block; margin: 0 auto; }
@@ -12,13 +12,39 @@
 <body>
 
 <div class="game-content group">
+  <div class="welcome">
 
+  <h3>Thanks for playing</h3>
+  <img src="./images/snoorp_small.png"/>
+  <p>by <strong>Sam Stuckey</strong></p>
+  <ul>
+    <li>
+      <a href="http://github.com/SamStuckey" value="github">github</a>
+    </li>
+    <li>
+      <a href="http://www.linkedin.com/in/sam-stuckey-9b290692">linkedin</a></li>
+      <li>
+        <a href="http:www.samstuckey.me">website</a>
+      </li>
+    </ul>
+
+  </div>
   <div class="game-canvas">
     <canvas id="gameCanvas" width="725" height="700"></canvas>
   </div>
   <div class="score-canvas">
-    <canvas id="scoreCanvas" width="200" height="500"></canvas>
+    <canvas id="scoreCanvas" width="200" height="120"></canvas>
   </div>
+
+  <div class="instructions">
+    <h3>How to play</h3>
+    <ul>
+      <li>⬅️  to aim left</li>
+      <li>➡️  to aim right</li>
+      <li>spacebar to fire!</li>
+    </ul>
+  </div>
+
 </div>
 <script type="text/javascript" src="bundle.js"></script>
 
