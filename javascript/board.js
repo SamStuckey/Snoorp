@@ -1,7 +1,10 @@
 const Snoorp = require('./snoorp');
+const Util = require('./util');
 
 const enemyColumnCount = 4;
 let initialized = false;
+
+let util = new Util();
 
 class Board {
   constructor (o) {
@@ -28,13 +31,13 @@ class Board {
   }
 
   addLaunchSnoorpToEnemies (target) {
-    const LeftRightVals = this.adjustedForColVal(target);
+    const LeftRightVals = util.adjustedForColVal(target);
     const newPos = this.getAttatchPosition(LeftRightVals, target);
     this.launchSnoorp.col = newPos.col;
     this.launchSnoorp.row = newPos.row;
 
-    if (this.board.enemies()[newPos.col]) {
-      this.board.enemies()[newPos.col][newPos.row] = this.launchSnoorp;
+    if (this.enemies[newPos.col]) {
+      this.enemies[newPos.col][newPos.row] = this.launchSnoorp;
     } else {
       this.putInNewRow();
     }
@@ -42,14 +45,14 @@ class Board {
 
   putInNewRow () {
     var newRow = [];
-    for(let r = 0; r < this.enemyRowCount; r++) {
-      if (r === this.launchSnoorp.rowPos) {
-        row.push(this.launchSnoorp);
+    for(let row = 0; row < this.enemyRowCount; row++) {
+      if (row === this.launchSnoorp.rowPos) {
+        newRow.push(this.launchSnoorp);
       } else {
-        row.push(new Snoorp({alive: false})); // blank sentinel
+        newRow.push(new Snoorp({alive: false})); // blank sentinel
       }
     }
-    enemies.push(row);
+    this.enemies.push(newRow);
   }
 
   destroySnoorps () {
@@ -85,7 +88,7 @@ class Board {
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
       const row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
-      enemies[0][row] = this.launchSnoorp;
+      this.enemies[0][row] = this.launchSnoorp;
       this.resetLaunchSnoorp();
     }
   }

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "webpack": "webpack --watch",
+    "postinstall": ""
   },
   "repository": {
     "type": "git",
@@ -14,15 +15,17 @@
     "node": "6.2.2",
     "npm": "3.9.5"
   },
-  "scripts": {
-    "webpack": "webpack --watch",
-    "postinstall": ""
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/SamStuckey/snoorp/issues"
   },
-  "homepage": "https://github.com/SamStuckey/snoorp#readme"
+  "homepage": "https://github.com/SamStuckey/snoorp#readme",
+  "dependencies": {
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.14.0",
+    "babel-preset-react": "^6.11.1"
+  }
 }

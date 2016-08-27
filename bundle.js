@@ -293,9 +293,12 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Snoorp = __webpack_require__(4);
+	var Util = __webpack_require__(5);
 	
 	var enemyColumnCount = 4;
 	var initialized = false;
+	
+	var util = new Util();
 	
 	var Board = function () {
 	  function Board(o) {
@@ -318,22 +321,22 @@
 	    value: function addEnemies() {
 	      for (var col = 0; col < enemyColumnCount; col++) {
 	        this.enemies[col] = [];
-	        for (var _row = 0; _row < this.enemyRowCount; _row++) {
-	          var options = { alive: true, visible: true, col: col, row: _row };
-	          this.enemies[col][_row] = new Snoorp(options);
+	        for (var row = 0; row < this.enemyRowCount; row++) {
+	          var options = { alive: true, visible: true, col: col, row: row };
+	          this.enemies[col][row] = new Snoorp(options);
 	        }
 	      }
 	    }
 	  }, {
 	    key: 'addLaunchSnoorpToEnemies',
 	    value: function addLaunchSnoorpToEnemies(target) {
-	      var LeftRightVals = this.adjustedForColVal(target);
+	      var LeftRightVals = util.adjustedForColVal(target);
 	      var newPos = this.getAttatchPosition(LeftRightVals, target);
 	      this.launchSnoorp.col = newPos.col;
 	      this.launchSnoorp.row = newPos.row;
 	
-	      if (this.board.enemies()[newPos.col]) {
-	        this.board.enemies()[newPos.col][newPos.row] = this.launchSnoorp;
+	      if (this.enemies[newPos.col]) {
+	        this.enemies[newPos.col][newPos.row] = this.launchSnoorp;
 	      } else {
 	        this.putInNewRow();
 	      }
@@ -342,14 +345,14 @@
 	    key: 'putInNewRow',
 	    value: function putInNewRow() {
 	      var newRow = [];
-	      for (var r = 0; r < this.enemyRowCount; r++) {
-	        if (r === this.launchSnoorp.rowPos) {
-	          row.push(this.launchSnoorp);
+	      for (var row = 0; row < this.enemyRowCount; row++) {
+	        if (row === this.launchSnoorp.rowPos) {
+	          newRow.push(this.launchSnoorp);
 	        } else {
-	          row.push(new Snoorp({ alive: false })); // blank sentinel
+	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
 	        }
 	      }
-	      enemies.push(row);
+	      this.enemies.push(newRow);
 	    }
 	  }, {
 	    key: 'destroySnoorps',
@@ -381,8 +384,8 @@
 	        this.resetLaunchSnoorp();
 	      } else if ( // collision with the ceiling
 	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
-	        var _row2 = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
-	        enemies[0][_row2] = this.launchSnoorp;
+	        var row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+	        this.enemies[0][row] = this.launchSnoorp;
 	        this.resetLaunchSnoorp();
 	      }
 	    }
@@ -434,8 +437,8 @@
 	    key: 'monitorEnemies',
 	    value: function monitorEnemies() {
 	      for (var col = 0; col < this.enemies.length; col++) {
-	        for (var _row3 = 0; _row3 < this.enemyRowCount; _row3++) {
-	          var target = this.enemies[col][_row3];
+	        for (var row = 0; row < this.enemyRowCount; row++) {
+	          var target = this.enemies[col][row];
 	          if (target.alive) {
 	            this.detectCollsion(target);
 	            this.drawEnemy(target);
@@ -497,7 +500,7 @@
 
 /***/ },
 /* 4 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -506,6 +509,9 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00', '#FAFA00'];
+	var Util = __webpack_require__(5);
+	
+	var util = new Util();
 	
 	var Snoorp = function () {
 	  function Snoorp() {
@@ -523,26 +529,13 @@
 	    this.vx = 0;
 	    this.vy = 0;
 	    this.launched = false;
+	    this.board = o.board;
 	  }
 	
 	  _createClass(Snoorp, [{
-	    key: 'adjustedForColVal',
-	    value: function adjustedForColVal(target) {
-	      var left, right;
-	      if (target.col % 2 === 0) {
-	        left = target.row;
-	        right = target.row + 1;
-	      } else {
-	        left = target.row - 1;
-	        right = target.row;
-	      }
-	
-	      return { left: left, right: right };
-	    }
-	  }, {
 	    key: 'adjacentMatches',
 	    value: function (_adjacentMatches) {
-	      function adjacentMatches(_x) {
+	      function adjacentMatches(_x, _x2) {
 	        return _adjacentMatches.apply(this, arguments);
 	      }
 	
@@ -551,13 +544,14 @@
 	      };
 	
 	      return adjacentMatches;
-	    }(function (existingMatches) {
+	    }(function (snoorp, existingMatches) {
+	      snoorp = snoorp || this;
+	      // debugger
 	      if (!existingMatches) {
 	        existingMatches = [];
 	      }
-	
 	      // find all touching snoorps of the same color
-	      var matches = this.adjacentSnoorps().filter(function (snoorp) {
+	      var matches = this.adjacentSnoorps(snoorp).filter(function (snoorp) {
 	        if (snoorp.color === matchsnoorp.color) {
 	          return snoorp;
 	        }
@@ -578,13 +572,13 @@
 	    })
 	  }, {
 	    key: 'adjacentSnoorps',
-	    value: function adjacentSnoorps() {
+	    value: function adjacentSnoorps(snoorp) {
 	      var _this = this;
 	
 	      var targetCol = this.col;
 	      var targetRow = this.row;
-	      var lr = adjustedForColVal(snoorp);
-	      adjacent = [{ col: targetCol - 1, row: lr.left }, // upper left
+	      var lr = util.adjustedForColVal(snoorp);
+	      var adjacent = [{ col: targetCol - 1, row: lr.left }, // upper left
 	      { col: targetCol - 1, row: lr.right }, // upper right
 	      { col: targetCol + 1, row: lr.left }, // bottom left
 	      { col: targetCol + 1, row: lr.right }, // bottom right
@@ -595,7 +589,7 @@
 	
 	      // return an array of snoorps in adjacent possitions
 	      return adjacent.filter(function (pos) {
-	        var enemies = _this.board.enemies();
+	        var enemies = _this.enemies;
 	        if (enemies[pos.col] && enemies[pos.col][pos.row] && enemies[pos.col][pos.row].alive) {
 	          return _this.board.enemies[pos.col][pos.row];
 	        }
@@ -628,6 +622,42 @@
 	}();
 	
 	module.exports = Snoorp;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Util = function () {
+	  function Util() {
+	    _classCallCheck(this, Util);
+	  }
+	
+	  _createClass(Util, [{
+	    key: "adjustedForColVal",
+	    value: function adjustedForColVal(target) {
+	      var left, right;
+	      if (target.col % 2 === 0) {
+	        left = target.row;
+	        right = target.row + 1;
+	      } else {
+	        left = target.row - 1;
+	        right = target.row;
+	      }
+	
+	      return { left: left, right: right };
+	    }
+	  }]);
+	
+	  return Util;
+	}();
+	
+	module.exports = Util;
 
 /***/ }
 /******/ ]);
