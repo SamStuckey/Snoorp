@@ -93,7 +93,8 @@
 	        ctx: ctx,
 	        score: score,
 	        launchSnoorp: this.launchSnoorp,
-	        snoorpSize: snoorpSize
+	        snoorpSize: snoorpSize,
+	        cannon: this.cannon
 	      });
 	    }
 	  }, {
@@ -155,13 +156,16 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Util = __webpack_require__(5);
+	var util = new Util();
 	
 	var cannonHeight = 70;
 	var cannonWidth = 60;
@@ -195,7 +199,7 @@
 	  }, {
 	    key: "drawCannonRot",
 	    value: function drawCannonRot() {
-	      var rad = this.convertToRads(this.angle);
+	      var rad = util.convertToRads(this.angle);
 	      // find the pivot point
 	      var cannonCenter = gameCanvas.width / 2;
 	      var cannonBase = gameCanvas.height;
@@ -220,14 +224,9 @@
 	      this.ctx.closePath();
 	    }
 	  }, {
-	    key: "convertToRads",
-	    value: function convertToRads(deg) {
-	      return deg * Math.PI / 180;
-	    }
-	  }, {
 	    key: "fireSnoorp",
 	    value: function fireSnoorp() {
-	      var rad = this.convertToRads(this.angle + 90);
+	      var rad = util.convertToRads(this.angle + 90);
 	      this.launched = true;
 	      this.launchSnoorp.vx = Math.cos(rad) * launchSpeed / 60;
 	      this.launchSnoorp.vy = Math.sin(rad) * launchSpeed / 60;
@@ -275,6 +274,12 @@
 	        }
 	      }
 	    }
+	  }, {
+	    key: "resetLaunch",
+	    value: function resetLaunch(newLaunchSnoorp) {
+	      this.launched = false;
+	      this.launchSnoorp = newLaunchSnoorp;
+	    }
 	  }]);
 	
 	  return Cannon;
@@ -295,7 +300,7 @@
 	var Snoorp = __webpack_require__(4);
 	var Util = __webpack_require__(5);
 	
-	var enemyColumnCount = 4;
+	var enemyColumnCount = 2;
 	var initialized = false;
 	
 	var util = new Util();
@@ -309,9 +314,10 @@
 	    this.launchSnoorp = o.launchSnoorp;
 	    this.score = o.score;
 	    this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
-	    this.enemies = [];
 	    this.downShift = 0;
+	    this.enemies = [];
 	    this.snoorpSize = o.snoorpSize;
+	    this.cannon = o.cannon;
 	
 	    this.addEnemies();
 	  }
@@ -322,7 +328,7 @@
 	      for (var col = 0; col < enemyColumnCount; col++) {
 	        this.enemies[col] = [];
 	        for (var row = 0; row < this.enemyRowCount; row++) {
-	          var options = { alive: true, visible: true, col: col, row: row };
+	          var options = { alive: true, visible: true, col: col, row: row, enemies: this.enemies };
 	          this.enemies[col][row] = new Snoorp(options);
 	        }
 	      }
@@ -330,8 +336,8 @@
 	  }, {
 	    key: 'addLaunchSnoorpToEnemies',
 	    value: function addLaunchSnoorpToEnemies(target) {
-	      var LeftRightVals = util.adjustedForColVal(target);
-	      var newPos = this.getAttatchPosition(LeftRightVals, target);
+	      var leftRightVals = util.adjustedForColVal(target);
+	      var newPos = this.getAttatchPosition(leftRightVals, target);
 	      this.launchSnoorp.col = newPos.col;
 	      this.launchSnoorp.row = newPos.row;
 	
@@ -346,7 +352,7 @@
 	    value: function putInNewRow() {
 	      var newRow = [];
 	      for (var row = 0; row < this.enemyRowCount; row++) {
-	        if (row === this.launchSnoorp.rowPos) {
+	        if (row === this.launchSnoorp.row) {
 	          newRow.push(this.launchSnoorp);
 	        } else {
 	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
@@ -357,7 +363,8 @@
 	  }, {
 	    key: 'destroySnoorps',
 	    value: function destroySnoorps() {
-	      var cluster = this.launchSnoorp.adjacentMatches();
+	      var cluster = util.findCluster(this.launchSnoorp, this.enemies);
+	      cluster.push(this.launchSnoorp);
 	
 	      if (cluster.length > 2) {
 	        var count = 0;
@@ -371,7 +378,7 @@
 	        });
 	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
 	        this.score += count * 10 * 2;
-	        this.dropHangingSnoorps();
+	        this.findHangingSnoorps();
 	      }
 	    }
 	  }, {
@@ -386,6 +393,8 @@
 	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
 	        var row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
 	        this.enemies[0][row] = this.launchSnoorp;
+	        this.launchSnoorp.row = row;
+	        this.launchSnoorp.col = 0;
 	        this.resetLaunchSnoorp();
 	      }
 	    }
@@ -396,13 +405,25 @@
 	      this.monitorEnemies();
 	    }
 	  }, {
-	    key: 'drawEnemy',
-	    value: function drawEnemy(snoorp) {
-	      snoorp.x = snoorp.x || snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
+	    key: 'drawEnemies',
+	    value: function drawEnemies(snoorp) {
+	      snoorp.x = snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
 	      snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
 	      // create row offset
-	      if (snoorp.col % 2 === 0 && !initialized) {
+	      if (snoorp.col % 2 === 0) {
 	        snoorp.x += 25;
+	      }
+	
+	      //drop floating snoorp
+	      if (snoorp.falling) {
+	        if (snoorp.y < this.canvas.height - 50) {
+	          snoorp.vy += 15;
+	          snoorp.y += snoorp.vy;
+	        } else {
+	          snoorp.alive = false;
+	          snoorp.falling = false;
+	          snoorp.vy = 0;
+	        }
 	      }
 	
 	      this.drawSnoorp(snoorp);
@@ -434,6 +455,83 @@
 	      this.ctx.closePath();
 	    }
 	  }, {
+	    key: 'findHangingSnoorps',
+	    value: function findHangingSnoorps() {
+	      var _this = this;
+	
+	      var checked = [];
+	      this.enemies.forEach(function (row) {
+	        row.forEach(function (snoorp) {
+	          if (!checked.includes(snoorp)) {
+	            var cluster = _this.getCluster(snoorp);
+	            var anchored = false;
+	            cluster.forEach(function (clustersnoorp) {
+	              if (clustersnoorp.col === 0) {
+	                anchored = true;
+	              }
+	            });
+	
+	            if (!anchored) {
+	              cluster.forEach(function (snoorp) {
+	                snoorp.falling = true;
+	                snoorp.color = '#000000';
+	              });
+	            }
+	            checked = checked.concat(cluster);
+	          }
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'getCluster',
+	    value: function getCluster(snoorp, included) {
+	      var _this2 = this;
+	
+	      included = included || [snoorp];
+	      var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
+	      var newSnoorps = util.filterDoubles(adjSnoorps, included);
+	      if (newSnoorps.length === 0) {
+	        return included;
+	      }
+	
+	      var allSnoorps = included.concat(newSnoorps);
+	      var newNewSnoorps = [];
+	      newSnoorps.forEach(function (newSnoorp) {
+	        newNewSnoorps = newNewSnoorps.concat(_this2.getCluster(newSnoorp, allSnoorps));
+	      });
+	      return newNewSnoorps.concat(allSnoorps);
+	    }
+	  }, {
+	    key: 'isFreeFloating',
+	    value: function (_isFreeFloating) {
+	      function isFreeFloating(_x, _x2) {
+	        return _isFreeFloating.apply(this, arguments);
+	      }
+	
+	      isFreeFloating.toString = function () {
+	        return _isFreeFloating.toString();
+	      };
+	
+	      return isFreeFloating;
+	    }(function (snoorp, included) {
+	      if (!included) {
+	        included = [];
+	      }
+	      included.push(snoorp);
+	
+	      var allsnoorpResponses = ['nope'];
+	      if (snoorp.col === 0) {
+	        allsnoorpResponses = ['anchored'];
+	      } else {
+	        var adjsnoorps = adjacentsnoorps(snoorp);
+	        var newsnoorps = filterDoubles(adjsnoorps, included);
+	        newsnoorps.forEach(function (adjsnoorp) {
+	          allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
+	        });
+	      }
+	      return allsnoorpResponses;
+	    })
+	  }, {
 	    key: 'monitorEnemies',
 	    value: function monitorEnemies() {
 	      for (var col = 0; col < this.enemies.length; col++) {
@@ -441,24 +539,11 @@
 	          var target = this.enemies[col][row];
 	          if (target.alive) {
 	            this.detectCollsion(target);
-	            this.drawEnemy(target);
-	            if (target.falling) {
-	              this.moveFallingSnoorps(target);
-	            }
+	            this.drawEnemies(target);
 	          }
 	        }
 	      }
 	      initialized = true;
-	    }
-	  }, {
-	    key: 'moveFallingSnoorps',
-	    value: function moveFallingSnoorps(snoorp) {
-	      if (snoorp.y < this.canvas.height) {
-	        snoorp.y *= 1.2;
-	      } else {
-	        snoorp.alive = false;
-	        snoorp.falling = false;
-	      }
 	    }
 	  }, {
 	    key: 'getAttatchPosition',
@@ -485,11 +570,16 @@
 	  }, {
 	    key: 'resetLaunchSnoorp',
 	    value: function resetLaunchSnoorp() {
-	      this.launchSnoorp = new Snoorp({
+	      this.launchSnoorp.launched = false;
+	      this.launchSnoorp.vx = 0;
+	      this.launchSnoorp.vy = 0;
+	      var newLaunchSnoorp = new Snoorp({
 	        x: this.canvas.width / 2,
 	        y: this.canvas.height,
 	        alive: true
 	      });
+	      this.launchSnoorp = newLaunchSnoorp;
+	      this.cannon.resetLaunch(newLaunchSnoorp);
 	    }
 	  }]);
 	
@@ -508,7 +598,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00', '#FAFA00'];
+	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00','#FAFA00'];
 	var Util = __webpack_require__(5);
 	
 	var util = new Util();
@@ -529,89 +619,9 @@
 	    this.vx = 0;
 	    this.vy = 0;
 	    this.launched = false;
-	    this.board = o.board;
 	  }
 	
 	  _createClass(Snoorp, [{
-	    key: 'adjacentMatches',
-	    value: function (_adjacentMatches) {
-	      function adjacentMatches(_x, _x2) {
-	        return _adjacentMatches.apply(this, arguments);
-	      }
-	
-	      adjacentMatches.toString = function () {
-	        return _adjacentMatches.toString();
-	      };
-	
-	      return adjacentMatches;
-	    }(function (snoorp, existingMatches) {
-	      snoorp = snoorp || this;
-	      // debugger
-	      if (!existingMatches) {
-	        existingMatches = [];
-	      }
-	      // find all touching snoorps of the same color
-	      var matches = this.adjacentSnoorps(snoorp).filter(function (snoorp) {
-	        if (snoorp.color === matchsnoorp.color) {
-	          return snoorp;
-	        }
-	      });
-	
-	      var newMatches = filterDoubles(matches, existingMatches);
-	      if (newMatches.length === 0) {
-	        return [];
-	      }
-	
-	      // recusively check all new matches for their new matches and combine
-	      var allMatches = newMatches.concat(existingMatches);
-	      newMatches.forEach(function (snoorp) {
-	        newMatches = newMatches.concat(adjacentMatches(snoorp, allMatches));
-	      });
-	
-	      return newMatches;
-	    })
-	  }, {
-	    key: 'adjacentSnoorps',
-	    value: function adjacentSnoorps(snoorp) {
-	      var _this = this;
-	
-	      var targetCol = this.col;
-	      var targetRow = this.row;
-	      var lr = util.adjustedForColVal(snoorp);
-	      var adjacent = [{ col: targetCol - 1, row: lr.left }, // upper left
-	      { col: targetCol - 1, row: lr.right }, // upper right
-	      { col: targetCol + 1, row: lr.left }, // bottom left
-	      { col: targetCol + 1, row: lr.right }, // bottom right
-	      { col: targetCol, row: targetRow + 1 }, // right
-	      { col: targetCol, row: targetRow - 1 }, // left
-	      { col: targetCol - 1, row: targetRow }, // above
-	      { col: targetCol + 1, row: targetRow }];
-	
-	      // return an array of snoorps in adjacent possitions
-	      return adjacent.filter(function (pos) {
-	        var enemies = _this.enemies;
-	        if (enemies[pos.col] && enemies[pos.col][pos.row] && enemies[pos.col][pos.row].alive) {
-	          return _this.board.enemies[pos.col][pos.row];
-	        }
-	      });
-	    }
-	  }, {
-	    key: 'filterDoubles',
-	    value: function filterDoubles(matches, existingMatches) {
-	      return matches.filter(function (newMatch) {
-	        var repeat;
-	        existingMatches.forEach(function (oldMatch) {
-	          if (newMatch === oldMatch) {
-	            repeat = true;
-	          }
-	        });
-	
-	        if (!repeat) {
-	          return newMatch;
-	        }
-	      });
-	    }
-	  }, {
 	    key: 'randomColor',
 	    value: function randomColor() {
 	      return COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -651,6 +661,85 @@
 	      }
 	
 	      return { left: left, right: right };
+	    }
+	  }, {
+	    key: "findCluster",
+	    value: function findCluster(matchSnoorp, enemies) {
+	      return this.adjacentMatches(matchSnoorp, enemies);
+	    }
+	  }, {
+	    key: "adjacentMatches",
+	    value: function adjacentMatches(matchSnoorp, enemies, existingMatches) {
+	      var _this = this;
+	
+	      if (!existingMatches) {
+	        existingMatches = [matchSnoorp];
+	      }
+	      // find all touching snoorps of the same color
+	      var matches = this.adjacentSnoorps(matchSnoorp, enemies).filter(function (enemy) {
+	        if (enemy.color === matchSnoorp.color) {
+	          return enemy;
+	        }
+	      });
+	
+	      var newMatches = this.filterDoubles(matches, existingMatches);
+	      if (newMatches.length === 0) {
+	        return [];
+	      }
+	
+	      // recusively check all new matches for their new matches and combine
+	      var allMatches = newMatches.concat(existingMatches);
+	      var newNewMatches = [];
+	      newMatches.forEach(function (enemy) {
+	        var roundMatches = _this.adjacentMatches(enemy, enemies, allMatches);
+	        newNewMatches = newNewMatches.concat(roundMatches);
+	      });
+	
+	      return newMatches.concat(newNewMatches);
+	    }
+	  }, {
+	    key: "adjacentSnoorps",
+	    value: function adjacentSnoorps(matchSnoorp, enemies) {
+	      var targetCol = matchSnoorp.col;
+	      var targetRow = matchSnoorp.row;
+	      var lr = this.adjustedForColVal(matchSnoorp);
+	      var adjacent = [{ col: targetCol - 1, row: lr.left }, // upper left
+	      { col: targetCol - 1, row: lr.right }, // upper right
+	      { col: targetCol + 1, row: lr.left }, // bottom left
+	      { col: targetCol + 1, row: lr.right }, // bottom right
+	      { col: targetCol, row: targetRow + 1 }, // right
+	      { col: targetCol, row: targetRow - 1 }];
+	
+	      // return an array of snoorps in adjacent possitions
+	      var adjSnoorps = [];
+	      adjacent.forEach(function (pos) {
+	        if (enemies[pos.col] && enemies[pos.col][pos.row] && enemies[pos.col][pos.row].alive) {
+	          adjSnoorps.push(enemies[pos.col][pos.row]);
+	        }
+	      });
+	
+	      return adjSnoorps;
+	    }
+	  }, {
+	    key: "convertToRads",
+	    value: function convertToRads(deg) {
+	      return deg * Math.PI / 180;
+	    }
+	  }, {
+	    key: "filterDoubles",
+	    value: function filterDoubles(matches, existingMatches) {
+	      return matches.filter(function (newMatch) {
+	        var repeat = false;
+	        existingMatches.forEach(function (oldMatch) {
+	          if (newMatch === oldMatch) {
+	            repeat = true;
+	          }
+	        });
+	
+	        if (!repeat) {
+	          return newMatch;
+	        }
+	      });
 	    }
 	  }]);
 	

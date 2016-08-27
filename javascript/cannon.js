@@ -1,3 +1,6 @@
+const Util = require('./util');
+const util = new Util();
+
 const cannonHeight = 70;
 const cannonWidth = 60;
 const launchSpeed = -800;
@@ -25,7 +28,7 @@ class Cannon {
   }
 
   drawCannonRot () {
-    const rad = this.convertToRads(this.angle);
+    const rad = util.convertToRads(this.angle);
     // find the pivot point
     const cannonCenter = gameCanvas.width / 2;
     const cannonBase = gameCanvas.height;
@@ -49,12 +52,8 @@ class Cannon {
     this.ctx.closePath();
   }
 
-  convertToRads (deg) {
-    return deg * Math.PI / 180;
-  }
-
   fireSnoorp () {
-    const rad = this.convertToRads(this.angle + 90);
+    const rad = util.convertToRads(this.angle + 90);
     this.launched = true;
     this.launchSnoorp.vx = Math.cos(rad)*launchSpeed/60;
     this.launchSnoorp.vy = Math.sin(rad)*launchSpeed/60;
@@ -94,6 +93,11 @@ class Cannon {
         this.angle -= 1;
       }
     }
+  }
+
+  resetLaunch (newLaunchSnoorp) {
+    this.launched = false;
+    this.launchSnoorp = newLaunchSnoorp;
   }
 }
 

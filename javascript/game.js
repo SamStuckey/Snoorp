@@ -24,7 +24,8 @@ class Game {
       ctx: ctx,
       score: score,
       launchSnoorp: this.launchSnoorp,
-      snoorpSize: snoorpSize
+      snoorpSize: snoorpSize,
+      cannon: this.cannon
     });
   }
 
