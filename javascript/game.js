@@ -71,7 +71,7 @@ class Game {
     if (status === 'won') {
       ctx.drawImage(winImage, 70, 150);
     } else {
-      ctx.drawImage(lossImage, 50, 150);
+      ctx.drawImage(lossImage, 30, 150);
     }
     ctx.font = "20px sans-serif";
     ctx.fillStyle = "black";

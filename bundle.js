@@ -152,7 +152,7 @@
 	      if (status === 'won') {
 	        ctx.drawImage(winImage, 70, 150);
 	      } else {
-	        ctx.drawImage(lossImage, 50, 150);
+	        ctx.drawImage(lossImage, 30, 150);
 	      }
 	      ctx.font = "20px sans-serif";
 	      ctx.fillStyle = "black";
@@ -225,7 +225,6 @@
 	    this.launched = false;
 	    this.launchSnoorp = o.launchSnoorp;
 	    this.leftPressed = false;
-	    this.numShots = o.numShots;
 	    this.rightPressed = false;
 	  }
 	
@@ -273,7 +272,6 @@
 	      this.launched = true;
 	      this.launchSnoorp.vx = Math.cos(rad) * launchSpeed / 60;
 	      this.launchSnoorp.vy = Math.sin(rad) * launchSpeed / 60;
-	      this.numShots += 1;
 	    }
 	  }, {
 	    key: "keyDownHandler",
@@ -362,6 +360,7 @@
 	    this.cannon = o.cannon;
 	    this.gameStatus = null;
 	    this.initialized = false;
+	    this.numShots = 0;
 	
 	    this.addEnemies();
 	  }
@@ -626,10 +625,16 @@
 	    key: 'pressDown',
 	    value: function pressDown() {
 	      this.downShift += this.snoorpSize * 2;
+	      this.numShots = 0;
 	    }
 	  }, {
 	    key: 'resetLaunchSnoorp',
 	    value: function resetLaunchSnoorp() {
+	      this.numShots += 1;
+	      if (this.numShots === 5) {
+	        this.pressDown();
+	      }
+	
 	      this.launchSnoorp.launched = false;
 	      this.launchSnoorp.vx = 0;
 	      this.launchSnoorp.vy = 0;
@@ -658,7 +663,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA']; //, '#00FA2E', '#FA00CC', '#FAAB00','#FAFA00'];
+	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC']; //, '#FAAB00','#FAFA00'];
 	var Util = __webpack_require__(5);
 	
 	var util = new Util();

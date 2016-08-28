@@ -18,6 +18,7 @@ class Board {
     this.cannon = o.cannon;
     this.gameStatus = null;
     this.initialized = false;
+    this.numShots = 0;
 
     this.addEnemies();
   }
@@ -248,9 +249,13 @@ class Board {
 
   pressDown () {
     this.downShift += this.snoorpSize * 2;
+    this.numShots = 0;
   }
 
   resetLaunchSnoorp () {
+    this.numShots += 1;
+    if (this.numShots === 5) { this.pressDown(); }
+
     this.launchSnoorp.launched = false;
     this.launchSnoorp.vx = 0;
     this.launchSnoorp.vy = 0;

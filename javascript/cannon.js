@@ -14,7 +14,6 @@ class Cannon {
     this.launched = false;
     this.launchSnoorp = o.launchSnoorp;
     this.leftPressed = false;
-    this.numShots = o.numShots;
     this.rightPressed = false;
   }
 
@@ -57,7 +56,6 @@ class Cannon {
     this.launched = true;
     this.launchSnoorp.vx = Math.cos(rad)*launchSpeed/60;
     this.launchSnoorp.vy = Math.sin(rad)*launchSpeed/60;
-    this.numShots += 1;
   }
 
   keyDownHandler (e) {
