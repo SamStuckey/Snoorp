@@ -17,6 +17,7 @@ class Board {
     this.enemies = [];
     this.snoorpSize = o.snoorpSize;
     this.cannon = o.cannon;
+    this.gameStatus = null;
 
     this.addEnemies();
   }
@@ -102,7 +103,7 @@ class Board {
     this.monitorEnemies();
   }
 
-  drawEnemies (snoorp) {
+  drawEnemy (snoorp) {
     snoorp.x = (snoorp.row * (this.snoorpSize * 2)) + this.snoorpSize;
     snoorp.y = (snoorp.col * (this.snoorpSize * 2) + this.downShift) + this.snoorpSize;
     // create row offset
@@ -111,7 +112,7 @@ class Board {
     //drop floating snoorp
     if (snoorp.falling) {
       if (snoorp.y < (this.canvas.height - 50)) {
-        snoorp.vy += 15;
+        snoorp.vy += 10;
         snoorp.y += snoorp.vy;
       } else {
         snoorp.alive = false;
@@ -145,6 +146,10 @@ class Board {
     this.ctx.closePath();
   }
 
+  checkGameStatus () {
+    return this.gameStatus;
+  }
+
   findHangingSnoorps () {
     var checked = [];
     this.enemies.forEach((row) => {
@@ -161,7 +166,6 @@ class Board {
           if (!anchored) {
             cluster.forEach((snoorp) => {
               snoorp.falling = true;
-              snoorp.color = '#000000';
             });
 
           }
@@ -207,15 +211,22 @@ class Board {
   }
 
   monitorEnemies () {
+    this.gameStatus = "won";
     for(let col = 0; col < this.enemies.length; col++) {
       for(let row = 0; row < this.enemyRowCount; row++) {
         const target = this.enemies[col][row];
         if (target.alive) {
+          if (target.y > this.canvas.height - 100) {
+            this.gameStatus = "lost";
+          } else {
+            this.gameStatus = null;
+          }
           this.detectCollsion(target);
-          this.drawEnemies(target);
+          this.drawEnemy(target);
         }
       }
     }
+
     initialized = true;
   }
 

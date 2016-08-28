@@ -1,4 +1,4 @@
-const COLORS = ['#004FFA', '#00FA2E'];//, '#FA00CC', '#FAAB00','#FAFA00'];
+const COLORS = ['#004FFA'];//, '#00FA2E', '#FA00CC', '#FAAB00','#FAFA00'];
 const Util = require('./util');
 
 const util = new Util();

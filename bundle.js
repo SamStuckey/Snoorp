@@ -48,8 +48,16 @@
 	
 	var Game = __webpack_require__(1);
 	
+	var game = void 0;
+	
+	// const resetButton = document.getElementById("reset");
+	// resetButton.addEventListener('click', () => {
+	//   game = new Game();
+	//   game.play();
+	// });
+	
 	document.addEventListener("DOMContentLoaded", function () {
-	  var game = new Game();
+	  game = new Game();
 	  game.play();
 	});
 
@@ -69,9 +77,17 @@
 	
 	var gameCanvas = document.getElementById("gameCanvas");
 	var scoreCanvas = document.getElementById("scoreCanvas");
+	var resetButton = document.getElementById('reset');
+	
 	var ctx = gameCanvas.getContext("2d");
 	var ctxScore = scoreCanvas.getContext("2d");
 	var snoorpSize = 25;
+	
+	var winImage = new Image();
+	winImage.src = "./images/win_text.png";
+	
+	var lossImage = new Image();
+	lossImage.src = "./images/loss_text.png";
 	
 	var score = 0;
 	var numShots = 0;
@@ -83,6 +99,8 @@
 	    this.launchSnoorp = this.newSnoorp();
 	    this.cannon = this.newCannon();
 	    this.board = this.newBoard();
+	
+	    resetButton.addEventListener('click', this.resetGame.bind(this));
 	  }
 	
 	  _createClass(Game, [{
@@ -129,6 +147,25 @@
 	      ctxScore.translate(-100, 0);
 	    }
 	  }, {
+	    key: 'gameOver',
+	    value: function gameOver(status) {
+	      if (status === 'won') {
+	        ctx.drawImage(winImage, 70, 150);
+	      } else {
+	        ctx.drawImage(lossImage, 50, 150);
+	      }
+	      ctx.font = "20px sans-serif";
+	      ctx.fillStyle = "black";
+	      ctx.fillText('click to play again', 290, 420);
+	    }
+	  }, {
+	    key: 'resetGame',
+	    value: function resetGame() {
+	      this.launchSnoorp = this.newSnoorp();
+	      this.cannon = this.newCannon();
+	      this.board = this.newBoard();
+	    }
+	  }, {
 	    key: 'run',
 	    value: function run() {
 	      ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -137,7 +174,10 @@
 	      this.cannon.drawCannonRot();
 	      this.board.drawBoard();
 	      this.drawScore();
-	      // checkGameOver();
+	      var status = this.board.checkGameStatus();
+	      if (status) {
+	        this.gameOver(status);
+	      }
 	    }
 	  }, {
 	    key: 'play',
@@ -145,7 +185,7 @@
 	      var c = this.cannon;
 	      document.addEventListener("keydown", c.keyDownHandler.bind(c), false);
 	      document.addEventListener("keyup", c.keyUpHandler.bind(c), false);
-	      setInterval(this.run.bind(this), 10);
+	      setInterval(this.run.bind(this), 7);
 	    }
 	  }]);
 	
@@ -318,6 +358,7 @@
 	    this.enemies = [];
 	    this.snoorpSize = o.snoorpSize;
 	    this.cannon = o.cannon;
+	    this.gameStatus = null;
 	
 	    this.addEnemies();
 	  }
@@ -405,8 +446,8 @@
 	      this.monitorEnemies();
 	    }
 	  }, {
-	    key: 'drawEnemies',
-	    value: function drawEnemies(snoorp) {
+	    key: 'drawEnemy',
+	    value: function drawEnemy(snoorp) {
 	      snoorp.x = snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
 	      snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
 	      // create row offset
@@ -417,7 +458,7 @@
 	      //drop floating snoorp
 	      if (snoorp.falling) {
 	        if (snoorp.y < this.canvas.height - 50) {
-	          snoorp.vy += 15;
+	          snoorp.vy += 10;
 	          snoorp.y += snoorp.vy;
 	        } else {
 	          snoorp.alive = false;
@@ -455,6 +496,11 @@
 	      this.ctx.closePath();
 	    }
 	  }, {
+	    key: 'checkGameStatus',
+	    value: function checkGameStatus() {
+	      return this.gameStatus;
+	    }
+	  }, {
 	    key: 'findHangingSnoorps',
 	    value: function findHangingSnoorps() {
 	      var _this = this;
@@ -474,7 +520,6 @@
 	            if (!anchored) {
 	              cluster.forEach(function (snoorp) {
 	                snoorp.falling = true;
-	                snoorp.color = '#000000';
 	              });
 	            }
 	            checked = checked.concat(cluster);
@@ -539,15 +584,22 @@
 	  }, {
 	    key: 'monitorEnemies',
 	    value: function monitorEnemies() {
+	      this.gameStatus = "won";
 	      for (var col = 0; col < this.enemies.length; col++) {
 	        for (var row = 0; row < this.enemyRowCount; row++) {
 	          var target = this.enemies[col][row];
 	          if (target.alive) {
+	            if (target.y > this.canvas.height - 100) {
+	              this.gameStatus = "lost";
+	            } else {
+	              this.gameStatus = null;
+	            }
 	            this.detectCollsion(target);
-	            this.drawEnemies(target);
+	            this.drawEnemy(target);
 	          }
 	        }
 	      }
+	
 	      initialized = true;
 	    }
 	  }, {
@@ -603,7 +655,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00','#FAFA00'];
+	var COLORS = ['#004FFA']; //, '#00FA2E', '#FA00CC', '#FAAB00','#FAFA00'];
 	var Util = __webpack_require__(5);
 	
 	var util = new Util();
