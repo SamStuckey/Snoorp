@@ -672,7 +672,7 @@
 	        newNewSnoorps = _this2.getCluster(newSnoorp, allSnoorps);
 	        allSnoorps = allSnoorps.concat(newNewSnoorps);
 	      });
-	      return newNewSnoorps.concat(allSnoorps);
+	      return allSnoorps;
 	    }
 	  }, {
 	    key: 'getScore',

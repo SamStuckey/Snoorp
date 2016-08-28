@@ -199,7 +199,7 @@ class Board {
       newNewSnoorps = this.getCluster(newSnoorp, allSnoorps);
       allSnoorps = allSnoorps.concat(newNewSnoorps);
     });
-    return newNewSnoorps.concat(allSnoorps);
+    return allSnoorps;
   }
 
 
