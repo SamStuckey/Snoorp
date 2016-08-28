@@ -71,7 +71,7 @@ class Game {
     if (status === 'won') {
       ctx.drawImage(winImage, 70, 150);
     } else {
-      ctx.drawImage(lossImage, 30, 150);
+      ctx.drawImage(lossImage, 2, 150);
     }
     ctx.font = "20px sans-serif";
     ctx.fillStyle = "black";
@@ -94,6 +94,8 @@ class Game {
     this.cannon.drawCannonRot();
     this.board.drawBoard();
     this.drawScore();
+
+    // checkGameStatus returns null unless game is won or lost
     let status = this.board.checkGameStatus();
     if (status) { this.gameOver(status); }
   }

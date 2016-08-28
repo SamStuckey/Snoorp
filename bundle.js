@@ -152,7 +152,7 @@
 	      if (status === 'won') {
 	        ctx.drawImage(winImage, 70, 150);
 	      } else {
-	        ctx.drawImage(lossImage, 30, 150);
+	        ctx.drawImage(lossImage, 2, 150);
 	      }
 	      ctx.font = "20px sans-serif";
 	      ctx.fillStyle = "black";
@@ -177,6 +177,8 @@
 	      this.cannon.drawCannonRot();
 	      this.board.drawBoard();
 	      this.drawScore();
+	
+	      // checkGameStatus returns null unless game is won or lost
 	      var status = this.board.checkGameStatus();
 	      if (status) {
 	        this.gameOver(status);
@@ -456,7 +458,7 @@
 	var Snoorp = __webpack_require__(5);
 	var Util = __webpack_require__(3);
 	
-	var enemyColumnCount = 2;
+	var enemyColumnCount = 3;
 	
 	var util = new Util();
 	
@@ -487,7 +489,13 @@
 	      for (var col = 0; col < enemyColumnCount; col++) {
 	        this.enemies[col] = [];
 	        for (var row = 0; row < this.enemyRowCount; row++) {
-	          var options = { alive: true, visible: true, col: col, row: row, enemies: this.enemies };
+	          var options = {
+	            alive: true,
+	            visible: true,
+	            col: col,
+	            row: row,
+	            enemies: this.enemies
+	          };
 	          var snoorp = new Snoorp(options);
 	          this.enemies[col][row] = snoorp;
 	          this.anchored.push(snoorp);
@@ -539,29 +547,35 @@
 	        });
 	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
 	        this.score += count * 10 * 2;
-	        // this.findHangingSnoorps();
 	      }
 	    }
 	  }, {
 	    key: 'detectCollsion',
 	    value: function detectCollsion(target) {
+	      var collision = false;
 	      if ( // collision with other snoorp
 	      this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
 	        this.addLaunchSnoorpToEnemies(target);
-	        this.destroySnoorps();
-	        this.updateAnchored();
-	        this.resetLaunchSnoorp();
+	        collision = true;
 	      } else if ( // collision with the ceiling
 	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
+	        // avoid overlapping snood placement
 	        var rowL = Math.floor(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
 	        var rowR = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
-	
 	        var row = this.enemies[0][rowL].alive ? rowR : rowL;
+	
+	        //place snood in base row
 	        this.enemies[0][row] = this.launchSnoorp;
-	        this.anchored.push(this.launchSnoorp);
+	        // this.anchored.push(this.launchSnoorp);
 	        this.launchSnoorp.launched = false;
 	        this.launchSnoorp.row = row;
 	        this.launchSnoorp.col = 0;
+	        collision = true;
+	      }
+	
+	      if (collision) {
+	        this.destroySnoorps();
+	        this.updateAnchored();
 	        this.resetLaunchSnoorp();
 	      }
 	    }
@@ -748,7 +762,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00','#FAFA00'];
+	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00', '#FAFA00'];
 	var Util = __webpack_require__(3);
 	
 	var util = new Util();

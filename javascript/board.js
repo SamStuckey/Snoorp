@@ -1,7 +1,7 @@
 const Snoorp = require('./snoorp');
 const Util = require('./util');
 
-const enemyColumnCount = 2;
+const enemyColumnCount = 3;
 
 let util = new Util();
 
@@ -28,7 +28,13 @@ class Board {
     for(let col = 0; col < enemyColumnCount; col++) {
       this.enemies[col] = [];
       for(let row = 0; row < this.enemyRowCount; row++) {
-        var options = {alive: true, visible: true, col: col, row: row, enemies: this.enemies};
+        var options = {
+          alive: true,
+          visible: true,
+          col: col,
+          row: row,
+          enemies: this.enemies
+        };
         let snoorp = new Snoorp(options);
         this.enemies[col][row] = snoorp;
         this.anchored.push(snoorp);
@@ -77,11 +83,11 @@ class Board {
       });
       // adds 10 points per snoorp, multiles by 2 for each additional snoorp
       this.score += ((count * 10) * 2);
-      // this.findHangingSnoorps();
     }
   }
 
   detectCollsion (target) {
+    let collision = false;
     if (              // collision with other snoorp
       this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize &&
       this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize &&
@@ -89,21 +95,27 @@ class Board {
       this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize
     ) {
       this.addLaunchSnoorpToEnemies(target);
-      this.destroySnoorps();
-      this.updateAnchored();
-      this.resetLaunchSnoorp();
+      collision = true;
     } else if (      // collision with the ceiling
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
+      // avoid overlapping snood placement
       const rowL = Math.floor(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
       const rowR = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
-
       let row = this.enemies[0][rowL].alive ? rowR : rowL;
+
+      //place snood in base row
       this.enemies[0][row] = this.launchSnoorp;
-      this.anchored.push(this.launchSnoorp);
+      // this.anchored.push(this.launchSnoorp);
       this.launchSnoorp.launched = false;
       this.launchSnoorp.row = row;
       this.launchSnoorp.col = 0;
+      collision = true;
+    }
+
+    if (collision) {
+      this.destroySnoorps();
+      this.updateAnchored();
       this.resetLaunchSnoorp();
     }
   }
