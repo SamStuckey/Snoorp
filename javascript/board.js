@@ -19,6 +19,7 @@ class Board {
     this.gameStatus = null;
     this.initialized = false;
     this.numShots = 0;
+    this.anchored = [];
 
     this.addEnemies();
   }
@@ -28,7 +29,9 @@ class Board {
       this.enemies[col] = [];
       for(let row = 0; row < this.enemyRowCount; row++) {
         var options = {alive: true, visible: true, col: col, row: row, enemies: this.enemies};
-        this.enemies[col][row] = new Snoorp(options);
+        let snoorp = new Snoorp(options);
+        this.enemies[col][row] = snoorp;
+        this.anchored.push(snoorp);
       }
     }
   }
@@ -74,7 +77,7 @@ class Board {
       });
       // adds 10 points per snoorp, multiles by 2 for each additional snoorp
       this.score += ((count * 10) * 2);
-      this.findHangingSnoorps();
+      // this.findHangingSnoorps();
     }
   }
 
@@ -87,6 +90,7 @@ class Board {
     ) {
       this.addLaunchSnoorpToEnemies(target);
       this.destroySnoorps();
+      this.updateAnchored();
       this.resetLaunchSnoorp();
     } else if (      // collision with the ceiling
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
@@ -112,12 +116,12 @@ class Board {
 
     //drop floating snoorp
     if (snoorp.falling) {
-      if (snoorp.y < (this.canvas.height - 50)) {
+      if (snoorp.y < (this.canvas.height - 150)) {
         snoorp.vy += 10;
         snoorp.y += snoorp.vy;
       } else {
         snoorp.alive = false;
-        snoorp.falling = false;
+        // snoorp.falling = false;
         snoorp.vy = 0;
       }
     }
@@ -151,31 +155,41 @@ class Board {
     return this.gameStatus;
   }
 
-  findHangingSnoorps () {
-    var checked = [];
-    this.enemies.forEach((row) => {
-      row.forEach((snoorp) => {
-        if (!checked.includes(snoorp)) {
-          var cluster = this.getCluster(snoorp);
-          var anchored = false;
-          cluster.forEach((clustersnoorp) => {
-            if (clustersnoorp.col === 0){
-              anchored = true;
-            }
-          });
-
-          if (!anchored) {
-            cluster.forEach((snoorp) => {
-              snoorp.falling = true;
-            });
-
-          }
-        checked = checked.concat(cluster);
-        }
-      });
+  updateAnchored () {
+    let newAnchored = [];
+    this.enemies[0].forEach((anchor) => {
+      if (anchor.alive) {
+        newAnchored = newAnchored.concat(this.getCluster(anchor));
+      }
     });
+    this.anchored = newAnchored;
   }
 
+  // findHangingSnoorps () {
+  //   var checked = [];
+  //   this.enemies.forEach((row) => {
+  //     row.forEach((snoorp) => {
+  //       if (!checked.includes(snoorp)) {
+  //         var cluster = this.getCluster(snoorp);
+  //         var anchored = false;
+  //         cluster.forEach((clustersnoorp) => {
+  //           if (clustersnoorp.col === 0){
+  //             anchored = true;
+  //           }
+  //         });
+  //
+  //         if (!anchored) {
+  //           cluster.forEach((snoorp) => {
+  //             snoorp.falling = true;
+  //           });
+  //
+  //         }
+  //       checked = checked.concat(cluster);
+  //       }
+  //     });
+  //   });
+  // }
+  //
   getCluster(snoorp, included) {
     included = included || [snoorp];
     var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
@@ -193,23 +207,23 @@ class Board {
   getScore () {
     return this.score;
   }
-
-  isFreeFloating (snoorp, included) {
-    if (!included) { included = []; }
-    included.push(snoorp);
-
-    var allsnoorpResponses = ['nope'];
-    if (snoorp.col === 0) {
-      allsnoorpResponses = ['anchored'];
-    } else {
-      var adjsnoorps = adjacentsnoorps(snoorp);
-      var newsnoorps = filterDoubles(adjsnoorps, included);
-      newsnoorps.forEach((adjsnoorp) => {
-        allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
-      });
-    }
-    return allsnoorpResponses;
-  }
+  //
+  // isFreeFloating (snoorp, included) {
+  //   if (!included) { included = []; }
+  //   included.push(snoorp);
+  //
+  //   var allsnoorpResponses = ['nope'];
+  //   if (snoorp.col === 0) {
+  //     allsnoorpResponses = ['anchored'];
+  //   } else {
+  //     var adjsnoorps = adjacentsnoorps(snoorp);
+  //     var newsnoorps = filterDoubles(adjsnoorps, included);
+  //     newsnoorps.forEach((adjsnoorp) => {
+  //       allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
+  //     });
+  //   }
+  //   return allsnoorpResponses;
+  // }
 
   monitorEnemies () {
     this.gameStatus = "won";
@@ -217,17 +231,21 @@ class Board {
       for(let row = 0; row < this.enemyRowCount; row++) {
         const target = this.enemies[col][row];
         if (target.alive) {
-          if (target.y > this.canvas.height - 100) {
+
+          // check if game is over
+          if (!target.falling && target.y > this.canvas.height - 100) {
             this.gameStatus = "lost";
           } else {
             this.gameStatus = null;
           }
-          this.detectCollsion(target);
+
           this.drawEnemy(target);
+          // kill matching snoods and drop hanging
+          this.detectCollsion(target);
+          if (!this.anchored.includes(target)) { target.falling = true; }
         }
       }
     }
-
     this.initialized = true;
   }
 

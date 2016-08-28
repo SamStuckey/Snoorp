@@ -72,8 +72,8 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Cannon = __webpack_require__(2);
-	var Board = __webpack_require__(3);
-	var Snoorp = __webpack_require__(4);
+	var Board = __webpack_require__(4);
+	var Snoorp = __webpack_require__(5);
 	
 	var gameCanvas = document.getElementById("gameCanvas");
 	var scoreCanvas = document.getElementById("scoreCanvas");
@@ -207,7 +207,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Util = __webpack_require__(5);
+	var Util = __webpack_require__(3);
 	var util = new Util();
 	
 	var cannonHeight = 70;
@@ -330,376 +330,6 @@
 
 /***/ },
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Snoorp = __webpack_require__(4);
-	var Util = __webpack_require__(5);
-	
-	var enemyColumnCount = 2;
-	
-	var util = new Util();
-	
-	var Board = function () {
-	  function Board(o) {
-	    _classCallCheck(this, Board);
-	
-	    this.canvas = o.canvas;
-	    this.ctx = o.ctx;
-	    this.launchSnoorp = o.launchSnoorp;
-	    this.score = o.score;
-	    this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
-	    this.downShift = 0;
-	    this.enemies = [];
-	    this.snoorpSize = o.snoorpSize;
-	    this.cannon = o.cannon;
-	    this.gameStatus = null;
-	    this.initialized = false;
-	    this.numShots = 0;
-	
-	    this.addEnemies();
-	  }
-	
-	  _createClass(Board, [{
-	    key: 'addEnemies',
-	    value: function addEnemies() {
-	      for (var col = 0; col < enemyColumnCount; col++) {
-	        this.enemies[col] = [];
-	        for (var row = 0; row < this.enemyRowCount; row++) {
-	          var options = { alive: true, visible: true, col: col, row: row, enemies: this.enemies };
-	          this.enemies[col][row] = new Snoorp(options);
-	        }
-	      }
-	    }
-	  }, {
-	    key: 'addLaunchSnoorpToEnemies',
-	    value: function addLaunchSnoorpToEnemies(target) {
-	      var leftRightVals = util.adjustedForColVal(target);
-	      var newPos = this.getAttatchPosition(leftRightVals, target);
-	      this.launchSnoorp.col = newPos.col;
-	      this.launchSnoorp.row = newPos.row;
-	
-	      if (this.enemies[newPos.col]) {
-	        this.enemies[newPos.col][newPos.row] = this.launchSnoorp;
-	      } else {
-	        this.putInNewRow();
-	      }
-	    }
-	  }, {
-	    key: 'putInNewRow',
-	    value: function putInNewRow() {
-	      var newRow = [];
-	      for (var row = 0; row < this.enemyRowCount; row++) {
-	        if (row === this.launchSnoorp.row) {
-	          newRow.push(this.launchSnoorp);
-	        } else {
-	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
-	        }
-	      }
-	      this.enemies.push(newRow);
-	    }
-	  }, {
-	    key: 'destroySnoorps',
-	    value: function destroySnoorps() {
-	      var cluster = util.findCluster(this.launchSnoorp, this.enemies);
-	      cluster.push(this.launchSnoorp);
-	
-	      if (cluster.length > 2) {
-	        var count = 0;
-	        var multiplier = 0;
-	
-	        cluster.forEach(function (snoorp) {
-	          snoorp.alive = false;
-	          snoorp.color = null;
-	          count += 1;
-	          multiplier += 1;
-	        });
-	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
-	        this.score += count * 10 * 2;
-	        this.findHangingSnoorps();
-	      }
-	    }
-	  }, {
-	    key: 'detectCollsion',
-	    value: function detectCollsion(target) {
-	      if ( // collision with other snoorp
-	      this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
-	        this.addLaunchSnoorpToEnemies(target);
-	        this.destroySnoorps();
-	        this.resetLaunchSnoorp();
-	      } else if ( // collision with the ceiling
-	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
-	        var row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
-	        this.enemies[0][row] = this.launchSnoorp;
-	        this.launchSnoorp.row = row;
-	        this.launchSnoorp.col = 0;
-	        this.resetLaunchSnoorp();
-	      }
-	    }
-	  }, {
-	    key: 'drawBoard',
-	    value: function drawBoard() {
-	      this.drawLaunchSnoorp();
-	      this.monitorEnemies();
-	    }
-	  }, {
-	    key: 'drawEnemy',
-	    value: function drawEnemy(snoorp) {
-	      snoorp.x = snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
-	      snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
-	      // create row offset
-	      if (snoorp.col % 2 === 0) {
-	        snoorp.x += 25;
-	      }
-	
-	      //drop floating snoorp
-	      if (snoorp.falling) {
-	        if (snoorp.y < this.canvas.height - 50) {
-	          snoorp.vy += 10;
-	          snoorp.y += snoorp.vy;
-	        } else {
-	          snoorp.alive = false;
-	          snoorp.falling = false;
-	          snoorp.vy = 0;
-	        }
-	      }
-	
-	      this.drawSnoorp(snoorp);
-	    }
-	  }, {
-	    key: 'drawLaunchSnoorp',
-	    value: function drawLaunchSnoorp() {
-	      var snoorp = this.launchSnoorp;
-	
-	      // bounce off the wall
-	      var touchingLeft = snoorp.x - this.snoorpSize <= 0;
-	      var touchingRight = snoorp.x + this.snoorpSize >= this.canvas.width;
-	      if (touchingLeft || touchingRight) {
-	        snoorp.vx *= -1;
-	      }
-	
-	      snoorp.x += snoorp.vx;
-	      snoorp.y += snoorp.vy;
-	
-	      this.drawSnoorp(snoorp);
-	    }
-	  }, {
-	    key: 'drawSnoorp',
-	    value: function drawSnoorp(snoorp) {
-	      this.ctx.beginPath();
-	      this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
-	      this.ctx.fillStyle = snoorp.color;
-	      this.ctx.fill();
-	      this.ctx.closePath();
-	    }
-	  }, {
-	    key: 'checkGameStatus',
-	    value: function checkGameStatus() {
-	      return this.gameStatus;
-	    }
-	  }, {
-	    key: 'findHangingSnoorps',
-	    value: function findHangingSnoorps() {
-	      var _this = this;
-	
-	      var checked = [];
-	      this.enemies.forEach(function (row) {
-	        row.forEach(function (snoorp) {
-	          if (!checked.includes(snoorp)) {
-	            var cluster = _this.getCluster(snoorp);
-	            var anchored = false;
-	            cluster.forEach(function (clustersnoorp) {
-	              if (clustersnoorp.col === 0) {
-	                anchored = true;
-	              }
-	            });
-	
-	            if (!anchored) {
-	              cluster.forEach(function (snoorp) {
-	                snoorp.falling = true;
-	              });
-	            }
-	            checked = checked.concat(cluster);
-	          }
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'getCluster',
-	    value: function getCluster(snoorp, included) {
-	      var _this2 = this;
-	
-	      included = included || [snoorp];
-	      var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
-	      var newSnoorps = util.filterDoubles(adjSnoorps, included);
-	      if (newSnoorps.length === 0) {
-	        return included;
-	      }
-	
-	      var allSnoorps = included.concat(newSnoorps);
-	      var newNewSnoorps = [];
-	      newSnoorps.forEach(function (newSnoorp) {
-	        newNewSnoorps = newNewSnoorps.concat(_this2.getCluster(newSnoorp, allSnoorps));
-	      });
-	      return newNewSnoorps.concat(allSnoorps);
-	    }
-	  }, {
-	    key: 'getScore',
-	    value: function getScore() {
-	      return this.score;
-	    }
-	  }, {
-	    key: 'isFreeFloating',
-	    value: function (_isFreeFloating) {
-	      function isFreeFloating(_x, _x2) {
-	        return _isFreeFloating.apply(this, arguments);
-	      }
-	
-	      isFreeFloating.toString = function () {
-	        return _isFreeFloating.toString();
-	      };
-	
-	      return isFreeFloating;
-	    }(function (snoorp, included) {
-	      if (!included) {
-	        included = [];
-	      }
-	      included.push(snoorp);
-	
-	      var allsnoorpResponses = ['nope'];
-	      if (snoorp.col === 0) {
-	        allsnoorpResponses = ['anchored'];
-	      } else {
-	        var adjsnoorps = adjacentsnoorps(snoorp);
-	        var newsnoorps = filterDoubles(adjsnoorps, included);
-	        newsnoorps.forEach(function (adjsnoorp) {
-	          allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
-	        });
-	      }
-	      return allsnoorpResponses;
-	    })
-	  }, {
-	    key: 'monitorEnemies',
-	    value: function monitorEnemies() {
-	      this.gameStatus = "won";
-	      for (var col = 0; col < this.enemies.length; col++) {
-	        for (var row = 0; row < this.enemyRowCount; row++) {
-	          var target = this.enemies[col][row];
-	          if (target.alive) {
-	            if (target.y > this.canvas.height - 100) {
-	              this.gameStatus = "lost";
-	            } else {
-	              this.gameStatus = null;
-	            }
-	            this.detectCollsion(target);
-	            this.drawEnemy(target);
-	          }
-	        }
-	      }
-	
-	      this.initialized = true;
-	    }
-	  }, {
-	    key: 'getAttatchPosition',
-	    value: function getAttatchPosition(lr, target) {
-	      var col = void 0,
-	          row = void 0;
-	      if (this.launchSnoorp.y - target.y > 10) {
-	        col = target.col + 1; // below
-	      } else if (this.launchSnoorp.y - target.y < 10 && this.launchSnoorp.y - target.y > -10) {
-	        col = target.col; // on the same level
-	      } else {
-	        col = target.col - 1; // above
-	      }
-	
-	      row = this.launchSnoorp.x - target.x > 0 ? lr.right : lr.left;
-	
-	      return { col: col, row: row };
-	    }
-	  }, {
-	    key: 'pressDown',
-	    value: function pressDown() {
-	      this.downShift += this.snoorpSize * 2;
-	      this.numShots = 0;
-	    }
-	  }, {
-	    key: 'resetLaunchSnoorp',
-	    value: function resetLaunchSnoorp() {
-	      this.numShots += 1;
-	      if (this.numShots === 5) {
-	        this.pressDown();
-	      }
-	
-	      this.launchSnoorp.launched = false;
-	      this.launchSnoorp.vx = 0;
-	      this.launchSnoorp.vy = 0;
-	      var newLaunchSnoorp = new Snoorp({
-	        x: this.canvas.width / 2,
-	        y: this.canvas.height,
-	        alive: true
-	      });
-	      this.launchSnoorp = newLaunchSnoorp;
-	      this.cannon.resetLaunch(newLaunchSnoorp);
-	    }
-	  }]);
-	
-	  return Board;
-	}();
-	
-	module.exports = Board;
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC']; //, '#FAAB00','#FAFA00'];
-	var Util = __webpack_require__(5);
-	
-	var util = new Util();
-	
-	var Snoorp = function () {
-	  function Snoorp() {
-	    var o = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-	
-	    _classCallCheck(this, Snoorp);
-	
-	    this.x = o.x || 0;
-	    this.y = o.y || 0;
-	    this.alive = o.alive;
-	    this.color = this.randomColor();
-	    this.col = o.col;
-	    this.row = o.row;
-	    this.falling = false;
-	    this.vx = 0;
-	    this.vy = 0;
-	    this.launched = false;
-	  }
-	
-	  _createClass(Snoorp, [{
-	    key: 'randomColor',
-	    value: function randomColor() {
-	      return COLORS[Math.floor(Math.random() * COLORS.length)];
-	    }
-	  }]);
-	
-	  return Snoorp;
-	}();
-	
-	module.exports = Snoorp;
-
-/***/ },
-/* 5 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -812,6 +442,387 @@
 	}();
 	
 	module.exports = Util;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Snoorp = __webpack_require__(5);
+	var Util = __webpack_require__(3);
+	
+	var enemyColumnCount = 2;
+	
+	var util = new Util();
+	
+	var Board = function () {
+	  function Board(o) {
+	    _classCallCheck(this, Board);
+	
+	    this.canvas = o.canvas;
+	    this.ctx = o.ctx;
+	    this.launchSnoorp = o.launchSnoorp;
+	    this.score = o.score;
+	    this.enemyRowCount = (gameCanvas.width - o.snoorpSize) / (o.snoorpSize * 2);
+	    this.downShift = 0;
+	    this.enemies = [];
+	    this.snoorpSize = o.snoorpSize;
+	    this.cannon = o.cannon;
+	    this.gameStatus = null;
+	    this.initialized = false;
+	    this.numShots = 0;
+	    this.anchored = [];
+	
+	    this.addEnemies();
+	  }
+	
+	  _createClass(Board, [{
+	    key: 'addEnemies',
+	    value: function addEnemies() {
+	      for (var col = 0; col < enemyColumnCount; col++) {
+	        this.enemies[col] = [];
+	        for (var row = 0; row < this.enemyRowCount; row++) {
+	          var options = { alive: true, visible: true, col: col, row: row, enemies: this.enemies };
+	          var snoorp = new Snoorp(options);
+	          this.enemies[col][row] = snoorp;
+	          this.anchored.push(snoorp);
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'addLaunchSnoorpToEnemies',
+	    value: function addLaunchSnoorpToEnemies(target) {
+	      var leftRightVals = util.adjustedForColVal(target);
+	      var newPos = this.getAttatchPosition(leftRightVals, target);
+	      this.launchSnoorp.col = newPos.col;
+	      this.launchSnoorp.row = newPos.row;
+	
+	      if (this.enemies[newPos.col]) {
+	        this.enemies[newPos.col][newPos.row] = this.launchSnoorp;
+	      } else {
+	        this.putInNewRow();
+	      }
+	    }
+	  }, {
+	    key: 'putInNewRow',
+	    value: function putInNewRow() {
+	      var newRow = [];
+	      for (var row = 0; row < this.enemyRowCount; row++) {
+	        if (row === this.launchSnoorp.row) {
+	          newRow.push(this.launchSnoorp);
+	        } else {
+	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
+	        }
+	      }
+	      this.enemies.push(newRow);
+	    }
+	  }, {
+	    key: 'destroySnoorps',
+	    value: function destroySnoorps() {
+	      var cluster = util.findCluster(this.launchSnoorp, this.enemies);
+	      cluster.push(this.launchSnoorp);
+	
+	      if (cluster.length > 2) {
+	        var count = 0;
+	        var multiplier = 0;
+	
+	        cluster.forEach(function (snoorp) {
+	          snoorp.alive = false;
+	          snoorp.color = null;
+	          count += 1;
+	          multiplier += 1;
+	        });
+	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
+	        this.score += count * 10 * 2;
+	        // this.findHangingSnoorps();
+	      }
+	    }
+	  }, {
+	    key: 'detectCollsion',
+	    value: function detectCollsion(target) {
+	      if ( // collision with other snoorp
+	      this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
+	        this.addLaunchSnoorpToEnemies(target);
+	        this.destroySnoorps();
+	        this.updateAnchored();
+	        this.resetLaunchSnoorp();
+	      } else if ( // collision with the ceiling
+	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
+	        var row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+	        this.enemies[0][row] = this.launchSnoorp;
+	        this.launchSnoorp.row = row;
+	        this.launchSnoorp.col = 0;
+	        this.resetLaunchSnoorp();
+	      }
+	    }
+	  }, {
+	    key: 'drawBoard',
+	    value: function drawBoard() {
+	      this.drawLaunchSnoorp();
+	      this.monitorEnemies();
+	    }
+	  }, {
+	    key: 'drawEnemy',
+	    value: function drawEnemy(snoorp) {
+	      snoorp.x = snoorp.row * (this.snoorpSize * 2) + this.snoorpSize;
+	      snoorp.y = snoorp.col * (this.snoorpSize * 2) + this.downShift + this.snoorpSize;
+	      // create row offset
+	      if (snoorp.col % 2 === 0) {
+	        snoorp.x += 25;
+	      }
+	
+	      //drop floating snoorp
+	      if (snoorp.falling) {
+	        if (snoorp.y < this.canvas.height - 150) {
+	          snoorp.vy += 10;
+	          snoorp.y += snoorp.vy;
+	        } else {
+	          snoorp.alive = false;
+	          // snoorp.falling = false;
+	          snoorp.vy = 0;
+	        }
+	      }
+	
+	      this.drawSnoorp(snoorp);
+	    }
+	  }, {
+	    key: 'drawLaunchSnoorp',
+	    value: function drawLaunchSnoorp() {
+	      var snoorp = this.launchSnoorp;
+	
+	      // bounce off the wall
+	      var touchingLeft = snoorp.x - this.snoorpSize <= 0;
+	      var touchingRight = snoorp.x + this.snoorpSize >= this.canvas.width;
+	      if (touchingLeft || touchingRight) {
+	        snoorp.vx *= -1;
+	      }
+	
+	      snoorp.x += snoorp.vx;
+	      snoorp.y += snoorp.vy;
+	
+	      this.drawSnoorp(snoorp);
+	    }
+	  }, {
+	    key: 'drawSnoorp',
+	    value: function drawSnoorp(snoorp) {
+	      this.ctx.beginPath();
+	      this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
+	      this.ctx.fillStyle = snoorp.color;
+	      this.ctx.fill();
+	      this.ctx.closePath();
+	    }
+	  }, {
+	    key: 'checkGameStatus',
+	    value: function checkGameStatus() {
+	      return this.gameStatus;
+	    }
+	  }, {
+	    key: 'updateAnchored',
+	    value: function updateAnchored() {
+	      var _this = this;
+	
+	      var newAnchored = [];
+	      this.enemies[0].forEach(function (anchor) {
+	        if (anchor.alive) {
+	          newAnchored = newAnchored.concat(_this.getCluster(anchor));
+	        }
+	      });
+	      this.anchored = newAnchored;
+	    }
+	
+	    // findHangingSnoorps () {
+	    //   var checked = [];
+	    //   this.enemies.forEach((row) => {
+	    //     row.forEach((snoorp) => {
+	    //       if (!checked.includes(snoorp)) {
+	    //         var cluster = this.getCluster(snoorp);
+	    //         var anchored = false;
+	    //         cluster.forEach((clustersnoorp) => {
+	    //           if (clustersnoorp.col === 0){
+	    //             anchored = true;
+	    //           }
+	    //         });
+	    //
+	    //         if (!anchored) {
+	    //           cluster.forEach((snoorp) => {
+	    //             snoorp.falling = true;
+	    //           });
+	    //
+	    //         }
+	    //       checked = checked.concat(cluster);
+	    //       }
+	    //     });
+	    //   });
+	    // }
+	    //
+	
+	  }, {
+	    key: 'getCluster',
+	    value: function getCluster(snoorp, included) {
+	      var _this2 = this;
+	
+	      included = included || [snoorp];
+	      var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
+	      var newSnoorps = util.filterDoubles(adjSnoorps, included);
+	      if (newSnoorps.length === 0) {
+	        return included;
+	      }
+	
+	      var allSnoorps = included.concat(newSnoorps);
+	      var newNewSnoorps = [];
+	      newSnoorps.forEach(function (newSnoorp) {
+	        newNewSnoorps = newNewSnoorps.concat(_this2.getCluster(newSnoorp, allSnoorps));
+	      });
+	      return newNewSnoorps.concat(allSnoorps);
+	    }
+	  }, {
+	    key: 'getScore',
+	    value: function getScore() {
+	      return this.score;
+	    }
+	    //
+	    // isFreeFloating (snoorp, included) {
+	    //   if (!included) { included = []; }
+	    //   included.push(snoorp);
+	    //
+	    //   var allsnoorpResponses = ['nope'];
+	    //   if (snoorp.col === 0) {
+	    //     allsnoorpResponses = ['anchored'];
+	    //   } else {
+	    //     var adjsnoorps = adjacentsnoorps(snoorp);
+	    //     var newsnoorps = filterDoubles(adjsnoorps, included);
+	    //     newsnoorps.forEach((adjsnoorp) => {
+	    //       allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
+	    //     });
+	    //   }
+	    //   return allsnoorpResponses;
+	    // }
+	
+	  }, {
+	    key: 'monitorEnemies',
+	    value: function monitorEnemies() {
+	      this.gameStatus = "won";
+	      for (var col = 0; col < this.enemies.length; col++) {
+	        for (var row = 0; row < this.enemyRowCount; row++) {
+	          var target = this.enemies[col][row];
+	          if (target.alive) {
+	
+	            // check if game is over
+	            if (!target.falling && target.y > this.canvas.height - 100) {
+	              this.gameStatus = "lost";
+	            } else {
+	              this.gameStatus = null;
+	            }
+	
+	            this.drawEnemy(target);
+	            // kill matching snoods and drop hanging
+	            this.detectCollsion(target);
+	            if (!this.anchored.includes(target)) {
+	              target.falling = true;
+	            }
+	          }
+	        }
+	      }
+	      this.initialized = true;
+	    }
+	  }, {
+	    key: 'getAttatchPosition',
+	    value: function getAttatchPosition(lr, target) {
+	      var col = void 0,
+	          row = void 0;
+	      if (this.launchSnoorp.y - target.y > 10) {
+	        col = target.col + 1; // below
+	      } else if (this.launchSnoorp.y - target.y < 10 && this.launchSnoorp.y - target.y > -10) {
+	        col = target.col; // on the same level
+	      } else {
+	        col = target.col - 1; // above
+	      }
+	
+	      row = this.launchSnoorp.x - target.x > 0 ? lr.right : lr.left;
+	
+	      return { col: col, row: row };
+	    }
+	  }, {
+	    key: 'pressDown',
+	    value: function pressDown() {
+	      this.downShift += this.snoorpSize * 2;
+	      this.numShots = 0;
+	    }
+	  }, {
+	    key: 'resetLaunchSnoorp',
+	    value: function resetLaunchSnoorp() {
+	      this.numShots += 1;
+	      if (this.numShots === 5) {
+	        this.pressDown();
+	      }
+	
+	      this.launchSnoorp.launched = false;
+	      this.launchSnoorp.vx = 0;
+	      this.launchSnoorp.vy = 0;
+	      var newLaunchSnoorp = new Snoorp({
+	        x: this.canvas.width / 2,
+	        y: this.canvas.height,
+	        alive: true
+	      });
+	      this.launchSnoorp = newLaunchSnoorp;
+	      this.cannon.resetLaunch(newLaunchSnoorp);
+	    }
+	  }]);
+	
+	  return Board;
+	}();
+	
+	module.exports = Board;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00','#FAFA00'];
+	var Util = __webpack_require__(3);
+	
+	var util = new Util();
+	
+	var Snoorp = function () {
+	  function Snoorp() {
+	    var o = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    _classCallCheck(this, Snoorp);
+	
+	    this.x = o.x || 0;
+	    this.y = o.y || 0;
+	    this.alive = o.alive;
+	    this.color = this.randomColor();
+	    this.col = o.col;
+	    this.row = o.row;
+	    this.falling = false;
+	    this.vx = 0;
+	    this.vy = 0;
+	    this.launched = false;
+	  }
+	
+	  _createClass(Snoorp, [{
+	    key: 'randomColor',
+	    value: function randomColor() {
+	      return COLORS[Math.floor(Math.random() * COLORS.length)];
+	    }
+	  }]);
+	
+	  return Snoorp;
+	}();
+	
+	module.exports = Snoorp;
 
 /***/ }
 /******/ ]);
