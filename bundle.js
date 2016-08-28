@@ -384,13 +384,11 @@
 	
 	      // recusively check all new matches for their new matches and combine
 	      var allMatches = newMatches.concat(existingMatches);
-	      var newNewMatches = [];
 	      newMatches.forEach(function (enemy) {
-	        var roundMatches = _this.adjacentMatches(enemy, enemies, allMatches);
-	        newNewMatches = newNewMatches.concat(roundMatches);
+	        var newNewMatches = _this.adjacentMatches(enemy, enemies, allMatches);
+	        allMatches = allMatches.concat(newNewMatches);
 	      });
-	
-	      return newMatches.concat(newNewMatches);
+	      return allMatches;
 	    }
 	  }, {
 	    key: "adjacentSnoorps",
@@ -532,7 +530,6 @@
 	    key: 'destroySnoorps',
 	    value: function destroySnoorps() {
 	      var cluster = util.findCluster(this.launchSnoorp, this.enemies);
-	      cluster.push(this.launchSnoorp);
 	
 	      if (cluster.length > 2) {
 	        var count = 0;
@@ -552,12 +549,12 @@
 	    key: 'detectCollsion',
 	    value: function detectCollsion(target) {
 	      var collision = false;
-	      if ( // collision with other snoorp
-	      this.launchSnoorp.launched && this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
+	      // collision with other snoorp
+	      if (this.launchSnoorp.launched && this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
 	        this.addLaunchSnoorpToEnemies(target);
 	        collision = true;
-	      } else if ( // collision with the ceiling
-	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
+	        // collision with the ceiling
+	      } else if (this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
 	        // avoid overlapping snood placement
 	        var rowL = Math.floor(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
 	        var rowR = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
@@ -647,6 +644,7 @@
 	      var newAnchored = [];
 	      this.enemies[0].forEach(function (anchor) {
 	        if (anchor.alive && !newAnchored.includes(anchor)) {
+	          newAnchored.push(anchor);
 	          newAnchored = newAnchored.concat(_this.getCluster(anchor));
 	        }
 	      });
@@ -665,9 +663,8 @@
 	      }
 	
 	      var allSnoorps = included.concat(newSnoorps);
-	      var newNewSnoorps = [];
 	      newSnoorps.forEach(function (newSnoorp) {
-	        newNewSnoorps = _this2.getCluster(newSnoorp, allSnoorps);
+	        var newNewSnoorps = _this2.getCluster(newSnoorp, allSnoorps);
 	        allSnoorps = allSnoorps.concat(newNewSnoorps);
 	      });
 	      return allSnoorps;

@@ -28,13 +28,11 @@ class Util {
 
     // recusively check all new matches for their new matches and combine
     var allMatches = newMatches.concat(existingMatches);
-    var newNewMatches = [];
     newMatches.forEach ((enemy) => {
-      let roundMatches = this.adjacentMatches(enemy, enemies, allMatches);
-      newNewMatches = newNewMatches.concat(roundMatches);
+      let newNewMatches = this.adjacentMatches(enemy, enemies, allMatches);
+      allMatches = allMatches.concat(newNewMatches);
     });
-
-    return newMatches.concat(newNewMatches);
+    return allMatches;
   }
 
   adjacentSnoorps (matchSnoorp, enemies) {

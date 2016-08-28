@@ -69,7 +69,6 @@ class Board {
 
   destroySnoorps () {
     const cluster = util.findCluster(this.launchSnoorp, this.enemies);
-    cluster.push(this.launchSnoorp);
 
     if (cluster.length > 2) {
       let count = 0;
@@ -88,7 +87,8 @@ class Board {
 
   detectCollsion (target) {
     let collision = false;
-    if (              // collision with other snoorp
+    // collision with other snoorp
+    if (
       this.launchSnoorp.launched &&
       this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize &&
       this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize &&
@@ -97,7 +97,8 @@ class Board {
     ) {
       this.addLaunchSnoorpToEnemies(target);
       collision = true;
-    } else if (      // collision with the ceiling
+      // collision with the ceiling
+    } else if (
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
       // avoid overlapping snood placement
@@ -172,11 +173,12 @@ class Board {
   checkGameStatus () {
     return this.gameStatus;
   }
-  
+
   updateAnchored () {
     let newAnchored = [];
     this.enemies[0].forEach((anchor) => {
       if (anchor.alive && !newAnchored.includes(anchor)) {
+        newAnchored.push(anchor);
         newAnchored = newAnchored.concat(this.getCluster(anchor));
       }
     });
@@ -190,20 +192,12 @@ class Board {
     if (newSnoorps.length === 0) { return []; }
 
     var allSnoorps = included.concat(newSnoorps);
-    var newNewSnoorps = [];
     newSnoorps.forEach((newSnoorp) => {
-      newNewSnoorps = this.getCluster(newSnoorp, allSnoorps);
+      let newNewSnoorps = this.getCluster(newSnoorp, allSnoorps);
       allSnoorps = allSnoorps.concat(newNewSnoorps);
     });
     return allSnoorps;
   }
-
-
-
-
-
-
-
 
   getScore () {
     return this.score;

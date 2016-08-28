@@ -7,11 +7,21 @@ li, h3, h1 {
 
 body {
   font-family: sans-serif;
+  background-image: url('images/beach.jpg');
 }
 
 canvas {
-  background: #eee;
   display: none;
+}
+
+#gameCanvas {
+  /*background-image: url('images/sand.jpg');*/
+
+}
+
+#scoreCanvas {
+  /*background-image: url('images/sand.jpg');*/
+
 }
 
 .game-canvas {
@@ -44,6 +54,7 @@ canvas {
 }
 
 .instructions {
+  /*background-image: url('images/sand.jpg');*/
   height: 130px;
   width: 180px;
   display: block;
@@ -53,6 +64,8 @@ canvas {
   background-color: #eee;
   text-align: center;
   margin-top: 20px;
+  /*color: white;*/
+
 }
 
 .welcome {
@@ -64,7 +77,9 @@ canvas {
 }
 
 .welcome h3 {
-  font-size: 20px;
+  font-size: 22px;
+  color: white;
+  transform: translateY(30px);
 }
 
 .welcome li {
