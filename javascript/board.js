@@ -95,8 +95,13 @@ class Board {
     } else if (      // collision with the ceiling
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
-      const row = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+      const rowL = Math.floor(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+      const rowR = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
+
+      let row = this.enemies[0][rowL].alive ? rowR : rowL;
       this.enemies[0][row] = this.launchSnoorp;
+      this.anchored.push(this.launchSnoorp);
+      this.launchSnoorp.launched = false;
       this.launchSnoorp.row = row;
       this.launchSnoorp.col = 0;
       this.resetLaunchSnoorp();
@@ -165,31 +170,6 @@ class Board {
     this.anchored = newAnchored;
   }
 
-  // findHangingSnoorps () {
-  //   var checked = [];
-  //   this.enemies.forEach((row) => {
-  //     row.forEach((snoorp) => {
-  //       if (!checked.includes(snoorp)) {
-  //         var cluster = this.getCluster(snoorp);
-  //         var anchored = false;
-  //         cluster.forEach((clustersnoorp) => {
-  //           if (clustersnoorp.col === 0){
-  //             anchored = true;
-  //           }
-  //         });
-  //
-  //         if (!anchored) {
-  //           cluster.forEach((snoorp) => {
-  //             snoorp.falling = true;
-  //           });
-  //
-  //         }
-  //       checked = checked.concat(cluster);
-  //       }
-  //     });
-  //   });
-  // }
-  //
   getCluster(snoorp, included) {
     included = included || [snoorp];
     var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
@@ -207,23 +187,6 @@ class Board {
   getScore () {
     return this.score;
   }
-  //
-  // isFreeFloating (snoorp, included) {
-  //   if (!included) { included = []; }
-  //   included.push(snoorp);
-  //
-  //   var allsnoorpResponses = ['nope'];
-  //   if (snoorp.col === 0) {
-  //     allsnoorpResponses = ['anchored'];
-  //   } else {
-  //     var adjsnoorps = adjacentsnoorps(snoorp);
-  //     var newsnoorps = filterDoubles(adjsnoorps, included);
-  //     newsnoorps.forEach((adjsnoorp) => {
-  //       allsnoorpResponses.concat(isFreeFloating(adjsnoorp, included));
-  //     });
-  //   }
-  //   return allsnoorpResponses;
-  // }
 
   monitorEnemies () {
     this.gameStatus = "won";
@@ -239,10 +202,9 @@ class Board {
             this.gameStatus = null;
           }
 
-          this.drawEnemy(target);
-          // kill matching snoods and drop hanging
-          this.detectCollsion(target);
           if (!this.anchored.includes(target)) { target.falling = true; }
+          this.drawEnemy(target);
+          this.detectCollsion(target);
         }
       }
     }
