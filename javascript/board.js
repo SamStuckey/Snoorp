@@ -137,10 +137,12 @@ class Board {
 
     //drop floating snoorp
     if (!!snoorp.falling) {
-      if (snoorp.y > (this.canvas.height - 150)) {
+      if (snoorp.y < (this.canvas.height)) {
         snoorp.vy += 10;
         snoorp.y += snoorp.vy;
-      } else {
+      }
+
+      if (snoorp.y > this.canvas.height){
         snoorp.alive = false;
         snoorp.falling = false;
         snoorp.vy = 0;
