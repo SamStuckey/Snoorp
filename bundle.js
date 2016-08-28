@@ -455,7 +455,7 @@
 	var Snoorp = __webpack_require__(5);
 	var Util = __webpack_require__(3);
 	
-	var enemyColumnCount = 1;
+	var enemyColumnCount = 4;
 	
 	var util = new Util();
 	
@@ -762,7 +762,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA', '#00FA2E']; //, '#FA00CC', '#FAAB00'];
+	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00'];
 	var Util = __webpack_require__(3);
 	
 	var util = new Util();

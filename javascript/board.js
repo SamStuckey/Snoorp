@@ -1,7 +1,7 @@
 const Snoorp = require('./snoorp');
 const Util = require('./util');
 
-const enemyColumnCount = 1;
+const enemyColumnCount = 4;
 
 let util = new Util();
 
