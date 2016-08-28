@@ -455,7 +455,7 @@
 	var Snoorp = __webpack_require__(5);
 	var Util = __webpack_require__(3);
 	
-	var enemyColumnCount = 4;
+	var enemyColumnCount = 1;
 	
 	var util = new Util();
 	
@@ -543,6 +543,8 @@
 	        });
 	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
 	        this.score += count * 10 * 2;
+	
+	        console.log(this.enemies);
 	      }
 	    }
 	  }, {
@@ -592,13 +594,13 @@
 	      }
 	
 	      //drop floating snoorp
-	      if (snoorp.falling) {
-	        if (snoorp.y < this.canvas.height - 150) {
+	      if (!!snoorp.falling) {
+	        if (snoorp.y > this.canvas.height - 150) {
 	          snoorp.vy += 10;
 	          snoorp.y += snoorp.vy;
 	        } else {
 	          snoorp.alive = false;
-	          // snoorp.falling = false;
+	          snoorp.falling = false;
 	          snoorp.vy = 0;
 	        }
 	      }
@@ -682,7 +684,6 @@
 	        for (var row = 0; row < this.enemyRowCount; row++) {
 	          var target = this.enemies[col][row];
 	          if (target.alive) {
-	
 	            // check if game is over
 	            if (!target.falling && target.y > this.canvas.height - 100) {
 	              this.gameStatus = "lost";

@@ -1,7 +1,7 @@
 const Snoorp = require('./snoorp');
 const Util = require('./util');
 
-const enemyColumnCount = 4;
+const enemyColumnCount = 1;
 
 let util = new Util();
 
@@ -82,6 +82,8 @@ class Board {
       });
       // adds 10 points per snoorp, multiles by 2 for each additional snoorp
       this.score += ((count * 10) * 2);
+
+      console.log(this.enemies);
     }
   }
 
@@ -134,13 +136,13 @@ class Board {
     if (snoorp.col % 2 === 0) { snoorp.x += 25; }
 
     //drop floating snoorp
-    if (snoorp.falling) {
-      if (snoorp.y < (this.canvas.height - 150)) {
+    if (!!snoorp.falling) {
+      if (snoorp.y > (this.canvas.height - 150)) {
         snoorp.vy += 10;
         snoorp.y += snoorp.vy;
       } else {
         snoorp.alive = false;
-        // snoorp.falling = false;
+        snoorp.falling = false;
         snoorp.vy = 0;
       }
     }
@@ -209,7 +211,6 @@ class Board {
       for(let row = 0; row < this.enemyRowCount; row++) {
         const target = this.enemies[col][row];
         if (target.alive) {
-
           // check if game is over
           if (!target.falling && target.y > this.canvas.height - 100) {
             this.gameStatus = "lost";
