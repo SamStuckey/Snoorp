@@ -89,6 +89,7 @@ class Board {
   detectCollsion (target) {
     let collision = false;
     if (              // collision with other snoorp
+      this.launchSnoorp.launched &&
       this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize &&
       this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize &&
       this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize &&
@@ -171,12 +172,7 @@ class Board {
   checkGameStatus () {
     return this.gameStatus;
   }
-
-
-
-
-
-
+  
   updateAnchored () {
     let newAnchored = [];
     this.enemies[0].forEach((anchor) => {

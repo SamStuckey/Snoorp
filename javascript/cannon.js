@@ -54,6 +54,7 @@ class Cannon {
   fireSnoorp () {
     const rad = util.convertToRads(this.angle + 90);
     this.launched = true;
+    this.launchSnoorp.launched = true;
     this.launchSnoorp.vx = Math.cos(rad)*launchSpeed/60;
     this.launchSnoorp.vy = Math.sin(rad)*launchSpeed/60;
   }

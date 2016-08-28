@@ -73,9 +73,6 @@ class Game {
     } else {
       ctx.drawImage(lossImage, 2, 150);
     }
-    ctx.font = "20px sans-serif";
-    ctx.fillStyle = "black";
-    ctx.fillText('click to play again', 290, 420);
   }
 
   resetGame () {
