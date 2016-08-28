@@ -1,7 +1,7 @@
 const Snoorp = require('./snoorp');
 const Util = require('./util');
 
-const enemyColumnCount = 3;
+const enemyColumnCount = 4;
 
 let util = new Util();
 
@@ -172,10 +172,15 @@ class Board {
     return this.gameStatus;
   }
 
+
+
+
+
+
   updateAnchored () {
     let newAnchored = [];
     this.enemies[0].forEach((anchor) => {
-      if (anchor.alive) {
+      if (anchor.alive && !newAnchored.includes(anchor)) {
         newAnchored = newAnchored.concat(this.getCluster(anchor));
       }
     });
@@ -186,15 +191,23 @@ class Board {
     included = included || [snoorp];
     var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
     var newSnoorps = util.filterDoubles(adjSnoorps, included);
-    if (newSnoorps.length === 0) { return included; }
+    if (newSnoorps.length === 0) { return []; }
 
     var allSnoorps = included.concat(newSnoorps);
     var newNewSnoorps = [];
     newSnoorps.forEach((newSnoorp) => {
-      newNewSnoorps = newNewSnoorps.concat(this.getCluster(newSnoorp, allSnoorps));
+      newNewSnoorps = this.getCluster(newSnoorp, allSnoorps);
+      allSnoorps = allSnoorps.concat(newNewSnoorps);
     });
     return newNewSnoorps.concat(allSnoorps);
   }
+
+
+
+
+
+
+
 
   getScore () {
     return this.score;

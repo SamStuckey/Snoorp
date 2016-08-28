@@ -70,7 +70,7 @@ class Util {
   }
 
   filterDoubles (matches, existingMatches) {
-    return matches.filter((newMatch) => {
+    let newest =  matches.filter((newMatch) => {
       var repeat = false;
       existingMatches.forEach((oldMatch) => {
         if (newMatch === oldMatch) { repeat = true; }
@@ -78,6 +78,7 @@ class Util {
 
       if (!repeat) { return newMatch; }
     });
+    return newest;
   }
 }
 

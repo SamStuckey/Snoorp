@@ -425,7 +425,7 @@
 	  }, {
 	    key: "filterDoubles",
 	    value: function filterDoubles(matches, existingMatches) {
-	      return matches.filter(function (newMatch) {
+	      var newest = matches.filter(function (newMatch) {
 	        var repeat = false;
 	        existingMatches.forEach(function (oldMatch) {
 	          if (newMatch === oldMatch) {
@@ -437,6 +437,7 @@
 	          return newMatch;
 	        }
 	      });
+	      return newest;
 	    }
 	  }]);
 	
@@ -458,7 +459,7 @@
 	var Snoorp = __webpack_require__(5);
 	var Util = __webpack_require__(3);
 	
-	var enemyColumnCount = 3;
+	var enemyColumnCount = 4;
 	
 	var util = new Util();
 	
@@ -647,7 +648,7 @@
 	
 	      var newAnchored = [];
 	      this.enemies[0].forEach(function (anchor) {
-	        if (anchor.alive) {
+	        if (anchor.alive && !newAnchored.includes(anchor)) {
 	          newAnchored = newAnchored.concat(_this.getCluster(anchor));
 	        }
 	      });
@@ -662,13 +663,14 @@
 	      var adjSnoorps = util.adjacentSnoorps(snoorp, this.enemies);
 	      var newSnoorps = util.filterDoubles(adjSnoorps, included);
 	      if (newSnoorps.length === 0) {
-	        return included;
+	        return [];
 	      }
 	
 	      var allSnoorps = included.concat(newSnoorps);
 	      var newNewSnoorps = [];
 	      newSnoorps.forEach(function (newSnoorp) {
-	        newNewSnoorps = newNewSnoorps.concat(_this2.getCluster(newSnoorp, allSnoorps));
+	        newNewSnoorps = _this2.getCluster(newSnoorp, allSnoorps);
+	        allSnoorps = allSnoorps.concat(newNewSnoorps);
 	      });
 	      return newNewSnoorps.concat(allSnoorps);
 	    }
