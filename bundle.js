@@ -164,6 +164,9 @@
 	      this.launchSnoorp = this.newSnoorp();
 	      this.cannon = this.newCannon();
 	      this.board = this.newBoard();
+	      var c = this.cannon;
+	      document.addEventListener("keydown", c.keyDownHandler.bind(c), false);
+	      document.addEventListener("keyup", c.keyUpHandler.bind(c), false);
 	    }
 	  }, {
 	    key: 'run',
@@ -341,7 +344,6 @@
 	var Util = __webpack_require__(5);
 	
 	var enemyColumnCount = 2;
-	var initialized = false;
 	
 	var util = new Util();
 	
@@ -359,6 +361,7 @@
 	    this.snoorpSize = o.snoorpSize;
 	    this.cannon = o.cannon;
 	    this.gameStatus = null;
+	    this.initialized = false;
 	
 	    this.addEnemies();
 	  }
@@ -600,7 +603,7 @@
 	        }
 	      }
 	
-	      initialized = true;
+	      this.initialized = true;
 	    }
 	  }, {
 	    key: 'getAttatchPosition',

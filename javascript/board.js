@@ -2,7 +2,6 @@ const Snoorp = require('./snoorp');
 const Util = require('./util');
 
 const enemyColumnCount = 2;
-let initialized = false;
 
 let util = new Util();
 
@@ -18,6 +17,7 @@ class Board {
     this.snoorpSize = o.snoorpSize;
     this.cannon = o.cannon;
     this.gameStatus = null;
+    this.initialized = false;
 
     this.addEnemies();
   }
@@ -227,7 +227,7 @@ class Board {
       }
     }
 
-    initialized = true;
+    this.initialized = true;
   }
 
   getAttatchPosition (lr, target) {

@@ -82,6 +82,9 @@ class Game {
     this.launchSnoorp = this.newSnoorp();
     this.cannon = this.newCannon();
     this.board = this.newBoard();
+    const c = this.cannon;
+    document.addEventListener("keydown", c.keyDownHandler.bind(c), false);
+    document.addEventListener("keyup", c.keyUpHandler.bind(c), false);
   }
 
   run () {
