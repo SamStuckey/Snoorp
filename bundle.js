@@ -152,7 +152,7 @@
 	      if (status === 'won') {
 	        ctx.drawImage(winImage, 70, 150);
 	      } else {
-	        ctx.drawImage(lossImage, 2, 150);
+	        ctx.drawImage(lossImage, 20, 150);
 	      }
 	    }
 	  }, {
