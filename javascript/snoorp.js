@@ -1,7 +1,21 @@
-const COLORS = ['#004FFA','#00FA2E', '#FA00CC', '#FAAB00'];
 const Util = require('./util');
 
+const green = new Image();
+green.src = "images/green.png";
+
+const blue = new Image();
+blue.src = "images/blue.png";
+
+const pink = new Image();
+pink.src = "images/pink.png";
+
+const orange = new Image();
+orange.src = "images/orange.png";
+
+const COLORS = [green, blue, pink, orange];
 const util = new Util();
+
+const remainingColors = [];
 
 class Snoorp {
   constructor (o = {}) {

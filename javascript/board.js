@@ -2,6 +2,8 @@ const Snoorp = require('./snoorp');
 const Util = require('./util');
 
 const enemyColumnCount = 4;
+const ceiling = new Image();
+ceiling.source = ('images/wood.png');
 
 let util = new Util();
 
@@ -167,11 +169,17 @@ class Board {
   }
 
   drawSnoorp (snoorp) {
-    this.ctx.beginPath();
-    this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
-    this.ctx.fillStyle = snoorp.color;
-    this.ctx.fill();
-    this.ctx.closePath();
+    this.ctx.drawImage(
+      snoorp.color,
+      snoorp.x - this.snoorpSize,
+      snoorp.y - this.snoorpSize,
+      this.snoorpSize * 2,
+      this.snoorpSize * 2
+    );
+    // this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
+    // this.ctx.fillStyle = snoorp.color;
+    // this.ctx.fill();
+    // this.ctx.closePath();
   }
 
   checkGameStatus () {

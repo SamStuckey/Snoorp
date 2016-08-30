@@ -456,6 +456,8 @@
 	var Util = __webpack_require__(3);
 	
 	var enemyColumnCount = 4;
+	var ceiling = new Image();
+	ceiling.source = 'images/wood.png';
 	
 	var util = new Util();
 	
@@ -629,11 +631,11 @@
 	  }, {
 	    key: 'drawSnoorp',
 	    value: function drawSnoorp(snoorp) {
-	      this.ctx.beginPath();
-	      this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI * 2);
-	      this.ctx.fillStyle = snoorp.color;
-	      this.ctx.fill();
-	      this.ctx.closePath();
+	      this.ctx.drawImage(snoorp.color, snoorp.x - this.snoorpSize, snoorp.y - this.snoorpSize, this.snoorpSize * 2, this.snoorpSize * 2);
+	      // this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
+	      // this.ctx.fillStyle = snoorp.color;
+	      // this.ctx.fill();
+	      // this.ctx.closePath();
 	    }
 	  }, {
 	    key: 'checkGameStatus',
@@ -756,16 +758,30 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var COLORS = ['#004FFA', '#00FA2E', '#FA00CC', '#FAAB00'];
 	var Util = __webpack_require__(3);
 	
+	var green = new Image();
+	green.src = "images/green.png";
+	
+	var blue = new Image();
+	blue.src = "images/blue.png";
+	
+	var pink = new Image();
+	pink.src = "images/pink.png";
+	
+	var orange = new Image();
+	orange.src = "images/orange.png";
+	
+	var COLORS = [green, blue, pink, orange];
 	var util = new Util();
+	
+	var remainingColors = [];
 	
 	var Snoorp = function () {
 	  function Snoorp() {
@@ -786,7 +802,7 @@
 	  }
 	
 	  _createClass(Snoorp, [{
-	    key: 'randomColor',
+	    key: "randomColor",
 	    value: function randomColor() {
 	      return COLORS[Math.floor(Math.random() * COLORS.length)];
 	    }
