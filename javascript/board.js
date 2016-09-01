@@ -1,7 +1,7 @@
 const Snoorp = require('./snoorp');
 const Util = require('./util');
 
-const enemyColumnCount = 4;
+const enemyColumnCount = 3;
 const ceiling = new Image();
 ceiling.source = ('images/wood.png');
 
