@@ -12,27 +12,27 @@ pink.src = "images/pink.png";
 const orange = new Image();
 orange.src = "images/orange.png";
 
-const COLORS = [green, blue, pink];//, orange];
+const COLORS = [green, blue];//, pink, orange];
 const util = new Util();
-
-const remainingColors = [];
 
 class Snoorp {
   constructor (o = {}) {
     this.x = o.x || 0;
     this.y = o.y || 0;
     this.alive = o.alive;
-    this.color = this.randomColor();
     this.col = o.col;
     this.row = o.row;
     this.falling = false;
     this.vx = 0;
     this.vy = 0;
     this.launched = false;
+    this.possibleColors = o.remainingColors || COLORS;
+    this.color = this.randomColor();
   }
 
   randomColor () {
-    return COLORS[(Math.floor(Math.random() * COLORS.length))];
+    let c = this.possibleColors;
+    return c[(Math.floor(Math.random() * c.length))];
   }
 }
 

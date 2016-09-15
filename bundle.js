@@ -483,6 +483,7 @@
 	    this.initialized = false;
 	    this.numShots = 0;
 	    this.anchored = [];
+	    this.remainingColors = -1;
 	
 	    this.addEnemies();
 	  }
@@ -537,6 +538,7 @@
 	        });
 	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
 	        this.score += count * 10 * 2;
+	        this.updateRemainingColors();
 	      }
 	    }
 	  }, {
@@ -745,10 +747,22 @@
 	      var newLaunchSnoorp = new Snoorp({
 	        x: this.canvas.width / 2,
 	        y: this.canvas.height,
-	        alive: true
+	        alive: true,
+	        remainingColors: this.remainingColors
 	      });
 	      this.launchSnoorp = newLaunchSnoorp;
 	      this.cannon.resetLaunch(newLaunchSnoorp);
+	    }
+	  }, {
+	    key: 'updateRemainingColors',
+	    value: function updateRemainingColors() {
+	      colors = {};
+	      this.enemies.forEach(function (row) {
+	        row.forEach(function (snoorp) {
+	          if (snoorp.alive) colors[snoorp.color] = true;
+	        });
+	      });
+	      this.remainingColors = colors.keys;
 	    }
 	  }]);
 	
@@ -781,10 +795,8 @@
 	var orange = new Image();
 	orange.src = "images/orange.png";
 	
-	var COLORS = [green, blue, pink]; //, orange];
+	var COLORS = [green, blue]; //, pink, orange];
 	var util = new Util();
-	
-	var remainingColors = [];
 	
 	var Snoorp = function () {
 	  function Snoorp() {
@@ -795,19 +807,21 @@
 	    this.x = o.x || 0;
 	    this.y = o.y || 0;
 	    this.alive = o.alive;
-	    this.color = this.randomColor();
 	    this.col = o.col;
 	    this.row = o.row;
 	    this.falling = false;
 	    this.vx = 0;
 	    this.vy = 0;
 	    this.launched = false;
+	    this.possibleColors = o.remainingColors || COLORS;
+	    this.color = this.randomColor();
 	  }
 	
 	  _createClass(Snoorp, [{
 	    key: "randomColor",
 	    value: function randomColor() {
-	      return COLORS[Math.floor(Math.random() * COLORS.length)];
+	      var c = this.possibleColors;
+	      return c[Math.floor(Math.random() * c.length)];
 	    }
 	  }]);
 	

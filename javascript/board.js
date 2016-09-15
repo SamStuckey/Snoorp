@@ -22,6 +22,7 @@ class Board {
     this.initialized = false;
     this.numShots = 0;
     this.anchored = [];
+    this.remainingColors = -1;
 
     this.addEnemies();
   }
@@ -72,6 +73,7 @@ class Board {
       });
       // adds 10 points per snoorp, multiles by 2 for each additional snoorp
       this.score += ((count * 10) * 2);
+      this.updateRemainingColors();
     }
   }
 
@@ -268,10 +270,21 @@ class Board {
     const newLaunchSnoorp = new Snoorp({
       x: (this.canvas.width / 2),
       y: this.canvas.height,
-      alive: true
+      alive: true,
+      remainingColors: this.remainingColors
     });
     this.launchSnoorp = newLaunchSnoorp;
     this.cannon.resetLaunch(newLaunchSnoorp);
+  }
+
+  updateRemainingColors () {
+    colors = {};
+    this.enemies.forEach((row) => {
+      row.forEach((snoorp) => {
+        if (snoorp.alive) colors[snoorp.color] = true;
+      });
+    });
+    this.remainingColors = colors.keys;
   }
 }
 
