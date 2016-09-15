@@ -62,12 +62,15 @@ class Cannon {
   keyDownHandler (e) {
     switch (e.keyCode){
       case 39: // right arrow
+      e.preventDefault();
       this.rightPressed = true;
       break;
       case 37: // left arrow
+      e.preventDefault();
       this.leftPressed = true;
       break;
       case 32: // spacebar
+      e.preventDefault();
       if (!this.launched) { this.fireSnoorp(); }
       break;
     }
