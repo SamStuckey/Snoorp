@@ -60,6 +60,7 @@ class Cannon {
   }
 
   keyDownHandler (e) {
+    e.preventDefault();
     switch (e.keyCode){
       case 39: // right arrow
       this.rightPressed = true;
@@ -74,6 +75,7 @@ class Cannon {
   }
 
   keyUpHandler (e) {
+    e.preventDefault();
     if(e.keyCode == 39) {
       this.rightPressed = false;
     }

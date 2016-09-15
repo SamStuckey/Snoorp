@@ -47,6 +47,9 @@ class Board {
   addLaunchSnoorpToEnemies (target) {
     const leftRightVals = util.adjustedForColVal(target);
     const newPos = this.getAttatchPosition(leftRightVals, target);
+    console.log("--------------addLaunchSnoorpToEnemies-------------");
+    console.log(`target => row: ${target.row}, col: ${target.col}`);
+    console.log(`placement => row: ${newPos.row}, col: ${newPos.col}`);
     this.launchSnoorp.col = newPos.col;
     this.launchSnoorp.row = newPos.row;
 
@@ -55,18 +58,6 @@ class Board {
     } else {
       this.putInNewRow();
     }
-  }
-
-  putInNewRow () {
-    var newRow = [];
-    for(let row = 0; row < this.enemyRowCount; row++) {
-      if (row === this.launchSnoorp.row) {
-        newRow.push(this.launchSnoorp);
-      } else {
-        newRow.push(new Snoorp({alive: false})); // blank sentinel
-      }
-    }
-    this.enemies.push(newRow);
   }
 
   destroySnoorps () {
@@ -84,8 +75,6 @@ class Board {
       });
       // adds 10 points per snoorp, multiles by 2 for each additional snoorp
       this.score += ((count * 10) * 2);
-
-      console.log(this.enemies);
     }
   }
 
@@ -176,10 +165,6 @@ class Board {
       this.snoorpSize * 2,
       this.snoorpSize * 2
     );
-    // this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
-    // this.ctx.fillStyle = snoorp.color;
-    // this.ctx.fill();
-    // this.ctx.closePath();
   }
 
   checkGameStatus () {
@@ -195,6 +180,33 @@ class Board {
       }
     });
     this.anchored = newAnchored;
+  }
+
+  getAttatchPosition (lr, target) {
+    console.log("--------------- getAttatchPosition ---------------");
+    console.log(`launch.x: ${this.launchSnoorp.x}, launch.y: ${this.launchSnoorp.y}`);
+    console.log(`target.x: ${target.x}, target.y: ${target.y}`);
+    let col, row;
+    let rightish = this.launchSnoorp.x - target.x > 0;
+    if (this.launchSnoorp.y - target.y > 10) {
+      col = target.col + 1;  // below
+      console.log(`set below, new col value is ${col}`);
+    } else if ((this.launchSnoorp.y - target.y <= 10 &&
+               this.launchSnoorp.y - target.y >= -10 )||
+                target.col > 0)  {
+      col = target.col;      // on the same level
+      row = rightish ? target.x + 1 : target.x - 1;
+      console.log(`set on level, new col value is ${col}`);
+      console.log(`rightish value: ${rightish}, row set to ${row}`);
+    } else {
+      col = target.col - 1;  // above
+      console.log(`set above, new col value is ${col}`);
+    }
+
+    row = (!row && rightish) ? lr.right : lr.left;
+    console.log(`row val set by 'adjustedForColVal' to: ${row}`);
+
+    return {col: col, row: row};
   }
 
   getCluster(snoorp, included) {
@@ -237,20 +249,16 @@ class Board {
     this.initialized = true;
   }
 
-  getAttatchPosition (lr, target) {
-    let col, row;
-    if (this.launchSnoorp.y - target.y > 10) {
-      col = target.col + 1;  // below
-    } else if (this.launchSnoorp.y - target.y < 10 &&
-               this.launchSnoorp.y - target.y > -10) {
-      col = target.col;      // on the same level
-    } else {
-      col = target.col - 1;  // above
+  putInNewRow () {
+    var newRow = [];
+    for(let row = 0; row < this.enemyRowCount; row++) {
+      if (row === this.launchSnoorp.row) {
+        newRow.push(this.launchSnoorp);
+      } else {
+        newRow.push(new Snoorp({alive: false})); // blank sentinel
+      }
     }
-
-    row = this.launchSnoorp.x - target.x > 0 ? lr.right : lr.left;
-
-    return {col: col, row: row};
+    this.enemies.push(newRow);
   }
 
   pressDown () {

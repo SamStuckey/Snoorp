@@ -58,6 +58,7 @@
 	
 	document.addEventListener("DOMContentLoaded", function () {
 	  game = new Game();
+	
 	  game.play();
 	});
 
@@ -96,10 +97,10 @@
 	  function Game() {
 	    _classCallCheck(this, Game);
 	
+	    // document.activeElement.blur();
 	    this.launchSnoorp = this.newSnoorp();
 	    this.cannon = this.newCannon();
 	    this.board = this.newBoard();
-	
 	    resetButton.addEventListener('click', this.resetGame.bind(this));
 	  }
 	
@@ -276,6 +277,7 @@
 	  }, {
 	    key: "keyDownHandler",
 	    value: function keyDownHandler(e) {
+	      e.preventDefault();
 	      switch (e.keyCode) {
 	        case 39:
 	          // right arrow
@@ -296,6 +298,7 @@
 	  }, {
 	    key: "keyUpHandler",
 	    value: function keyUpHandler(e) {
+	      e.preventDefault();
 	      if (e.keyCode == 39) {
 	        this.rightPressed = false;
 	      } else if (e.keyCode == 37) {
@@ -346,13 +349,19 @@
 	  _createClass(Util, [{
 	    key: "adjustedForColVal",
 	    value: function adjustedForColVal(target) {
+	      console.log("---------------- adjustedForColVal ---------------");
 	      var left, right;
 	      if (target.col % 2 === 0) {
+	
 	        left = target.row;
 	        right = target.row + 1;
+	        console.log("even row target detected");
+	        console.log("left: " + left + ", right: " + right + " set for launchSnoorp");
 	      } else {
 	        left = target.row - 1;
 	        right = target.row;
+	        console.log("odd row target detected");
+	        console.log("left: " + left + ", right: " + right + " set for launchSnoorp");
 	      }
 	
 	      return { left: left, right: right };
@@ -455,7 +464,7 @@
 	var Snoorp = __webpack_require__(5);
 	var Util = __webpack_require__(3);
 	
-	var enemyColumnCount = 4;
+	var enemyColumnCount = 3;
 	var ceiling = new Image();
 	ceiling.source = 'images/wood.png';
 	
@@ -506,6 +515,9 @@
 	    value: function addLaunchSnoorpToEnemies(target) {
 	      var leftRightVals = util.adjustedForColVal(target);
 	      var newPos = this.getAttatchPosition(leftRightVals, target);
+	      console.log("--------------addLaunchSnoorpToEnemies-------------");
+	      console.log('target => row: ' + target.row + ', col: ' + target.col);
+	      console.log('placement => row: ' + newPos.row + ', col: ' + newPos.col);
 	      this.launchSnoorp.col = newPos.col;
 	      this.launchSnoorp.row = newPos.row;
 	
@@ -514,19 +526,6 @@
 	      } else {
 	        this.putInNewRow();
 	      }
-	    }
-	  }, {
-	    key: 'putInNewRow',
-	    value: function putInNewRow() {
-	      var newRow = [];
-	      for (var row = 0; row < this.enemyRowCount; row++) {
-	        if (row === this.launchSnoorp.row) {
-	          newRow.push(this.launchSnoorp);
-	        } else {
-	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
-	        }
-	      }
-	      this.enemies.push(newRow);
 	    }
 	  }, {
 	    key: 'destroySnoorps',
@@ -545,8 +544,6 @@
 	        });
 	        // adds 10 points per snoorp, multiles by 2 for each additional snoorp
 	        this.score += count * 10 * 2;
-	
-	        console.log(this.enemies);
 	      }
 	    }
 	  }, {
@@ -632,10 +629,6 @@
 	    key: 'drawSnoorp',
 	    value: function drawSnoorp(snoorp) {
 	      this.ctx.drawImage(snoorp.color, snoorp.x - this.snoorpSize, snoorp.y - this.snoorpSize, this.snoorpSize * 2, this.snoorpSize * 2);
-	      // this.ctx.arc(snoorp.x, snoorp.y, this.snoorpSize, 0, Math.PI*2);
-	      // this.ctx.fillStyle = snoorp.color;
-	      // this.ctx.fill();
-	      // this.ctx.closePath();
 	    }
 	  }, {
 	    key: 'checkGameStatus',
@@ -655,6 +648,33 @@
 	        }
 	      });
 	      this.anchored = newAnchored;
+	    }
+	  }, {
+	    key: 'getAttatchPosition',
+	    value: function getAttatchPosition(lr, target) {
+	      console.log("--------------- getAttatchPosition ---------------");
+	      console.log('launch.x: ' + this.launchSnoorp.x + ', launch.y: ' + this.launchSnoorp.y);
+	      console.log('target.x: ' + target.x + ', target.y: ' + target.y);
+	      var col = void 0,
+	          row = void 0;
+	      var rightish = this.launchSnoorp.x - target.x > 0;
+	      if (this.launchSnoorp.y - target.y > 10) {
+	        col = target.col + 1; // below
+	        console.log('set below, new col value is ' + col);
+	      } else if (this.launchSnoorp.y - target.y <= 10 && this.launchSnoorp.y - target.y >= -10 || target.col > 0) {
+	        col = target.col; // on the same level
+	        row = rightish ? target.x + 1 : target.x - 1;
+	        console.log('set on level, new col value is ' + col);
+	        console.log('rightish value: ' + rightish + ', row set to ' + row);
+	      } else {
+	        col = target.col - 1; // above
+	        console.log('set above, new col value is ' + col);
+	      }
+	
+	      row = !row && rightish ? lr.right : lr.left;
+	      console.log('row val set by \'adjustedForColVal\' to: ' + row);
+	
+	      return { col: col, row: row };
 	    }
 	  }, {
 	    key: 'getCluster',
@@ -706,21 +726,17 @@
 	      this.initialized = true;
 	    }
 	  }, {
-	    key: 'getAttatchPosition',
-	    value: function getAttatchPosition(lr, target) {
-	      var col = void 0,
-	          row = void 0;
-	      if (this.launchSnoorp.y - target.y > 10) {
-	        col = target.col + 1; // below
-	      } else if (this.launchSnoorp.y - target.y < 10 && this.launchSnoorp.y - target.y > -10) {
-	        col = target.col; // on the same level
-	      } else {
-	        col = target.col - 1; // above
+	    key: 'putInNewRow',
+	    value: function putInNewRow() {
+	      var newRow = [];
+	      for (var row = 0; row < this.enemyRowCount; row++) {
+	        if (row === this.launchSnoorp.row) {
+	          newRow.push(this.launchSnoorp);
+	        } else {
+	          newRow.push(new Snoorp({ alive: false })); // blank sentinel
+	        }
 	      }
-	
-	      row = this.launchSnoorp.x - target.x > 0 ? lr.right : lr.left;
-	
-	      return { col: col, row: row };
+	      this.enemies.push(newRow);
 	    }
 	  }, {
 	    key: 'pressDown',
@@ -778,7 +794,7 @@
 	var orange = new Image();
 	orange.src = "images/orange.png";
 	
-	var COLORS = [green, blue, pink, orange];
+	var COLORS = [green, blue, pink]; //, orange];
 	var util = new Util();
 	
 	var remainingColors = [];

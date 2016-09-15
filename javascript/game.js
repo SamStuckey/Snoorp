@@ -17,14 +17,15 @@ winImage.src = "./images/win_text.png";
 const lossImage = new Image();
 lossImage.src = "./images/loss_text.png";
 
+
 let score = 0;
 let numShots = 0;
 class Game {
   constructor () {
+    // document.activeElement.blur();
     this.launchSnoorp = this.newSnoorp();
     this.cannon = this.newCannon();
     this.board = this.newBoard();
-
     resetButton.addEventListener('click', this.resetGame.bind(this));
   }
 
