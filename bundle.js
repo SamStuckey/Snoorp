@@ -268,13 +268,6 @@
 	  }, {
 	    key: "fireSnoorp",
 	    value: function fireSnoorp() {
-	      console.log("-----------------------------------------------");
-	      console.log("-----------------------------------------------");
-	      console.log("-----------------------------------------------");
-	      console.log("---------------    NEW SHOT    ----------------");
-	      console.log("-----------------------------------------------");
-	      console.log("-----------------------------------------------");
-	      console.log("-----------------------------------------------");
 	      var rad = util.convertToRads(this.angle + 90);
 	      this.launched = true;
 	      this.launchSnoorp.launched = true;
@@ -284,7 +277,6 @@
 	  }, {
 	    key: "keyDownHandler",
 	    value: function keyDownHandler(e) {
-	      e.preventDefault();
 	      switch (e.keyCode) {
 	        case 39:
 	          // right arrow
@@ -305,7 +297,6 @@
 	  }, {
 	    key: "keyUpHandler",
 	    value: function keyUpHandler(e) {
-	      e.preventDefault();
 	      if (e.keyCode == 39) {
 	        this.rightPressed = false;
 	      } else if (e.keyCode == 37) {

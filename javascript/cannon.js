@@ -52,13 +52,6 @@ class Cannon {
   }
 
   fireSnoorp () {
-    console.log("-----------------------------------------------");
-    console.log("-----------------------------------------------");
-    console.log("-----------------------------------------------");
-    console.log("---------------    NEW SHOT    ----------------");
-    console.log("-----------------------------------------------");
-    console.log("-----------------------------------------------");
-    console.log("-----------------------------------------------");
     const rad = util.convertToRads(this.angle + 90);
     this.launched = true;
     this.launchSnoorp.launched = true;
@@ -67,7 +60,6 @@ class Cannon {
   }
 
   keyDownHandler (e) {
-    e.preventDefault();
     switch (e.keyCode){
       case 39: // right arrow
       this.rightPressed = true;
@@ -82,7 +74,6 @@ class Cannon {
   }
 
   keyUpHandler (e) {
-    e.preventDefault();
     if(e.keyCode == 39) {
       this.rightPressed = false;
     }
