@@ -52,6 +52,13 @@ class Cannon {
   }
 
   fireSnoorp () {
+    console.log("-----------------------------------------------");
+    console.log("-----------------------------------------------");
+    console.log("-----------------------------------------------");
+    console.log("---------------    NEW SHOT    ----------------");
+    console.log("-----------------------------------------------");
+    console.log("-----------------------------------------------");
+    console.log("-----------------------------------------------");
     const rad = util.convertToRads(this.angle + 90);
     this.launched = true;
     this.launchSnoorp.launched = true;
