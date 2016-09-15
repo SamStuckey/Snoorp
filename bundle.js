@@ -356,19 +356,14 @@
 	  _createClass(Util, [{
 	    key: "adjustedForColVal",
 	    value: function adjustedForColVal(target) {
-	      console.log("---------------- adjustedForColVal ---------------");
 	      var left, right;
 	      if (target.col % 2 === 0) {
 	
 	        left = target.row;
 	        right = target.row + 1;
-	        console.log("even row target detected");
-	        console.log("left: " + left + ", right: " + right + " set for launchSnoorp");
 	      } else {
 	        left = target.row - 1;
 	        right = target.row;
-	        console.log("odd row target detected");
-	        console.log("left: " + left + ", right: " + right + " set for launchSnoorp");
 	      }
 	
 	      return { left: left, right: right };
@@ -522,9 +517,6 @@
 	    value: function addLaunchSnoorpToEnemies(target) {
 	      var leftRightVals = util.adjustedForColVal(target);
 	      var newPos = this.getAttatchPosition(leftRightVals, target);
-	      console.log("--------------addLaunchSnoorpToEnemies-------------");
-	      console.log('target => row: ' + target.row + ', col: ' + target.col);
-	      console.log('placement => row: ' + newPos.row + ', col: ' + newPos.col);
 	      this.launchSnoorp.col = newPos.col;
 	      this.launchSnoorp.row = newPos.row;
 	
@@ -659,27 +651,21 @@
 	  }, {
 	    key: 'getAttatchPosition',
 	    value: function getAttatchPosition(lr, target) {
-	      console.log("--------------- getAttatchPosition ---------------");
-	      console.log('launch.x: ' + this.launchSnoorp.x + ', launch.y: ' + this.launchSnoorp.y);
-	      console.log('target.x: ' + target.x + ', target.y: ' + target.y);
 	      var col = void 0,
 	          row = void 0;
 	      var rightish = this.launchSnoorp.x - target.x > 0;
 	      if (this.launchSnoorp.y - target.y > 10) {
 	        col = target.col + 1; // below
-	        console.log('set below, new col value is ' + col);
 	      } else if (this.launchSnoorp.y - target.y <= 10 && this.launchSnoorp.y - target.y >= -10 || target.col > 0) {
 	        col = target.col; // on the same level
-	        row = rightish ? target.x + 1 : target.x - 1;
-	        console.log('set on level, new col value is ' + col);
-	        console.log('rightish value: ' + rightish + ', row set to ' + row);
+	        row = rightish ? target.row + 1 : target.col - 1;
 	      } else {
 	        col = target.col - 1; // above
-	        console.log('set above, new col value is ' + col);
 	      }
 	
-	      row = !row && rightish ? lr.right : lr.left;
-	      console.log('row val set by \'adjustedForColVal\' to: ' + row);
+	      if (!row) {
+	        row = rightish ? lr.right : lr.left;
+	      }
 	
 	      return { col: col, row: row };
 	    }

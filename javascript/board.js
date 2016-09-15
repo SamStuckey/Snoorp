@@ -47,9 +47,6 @@ class Board {
   addLaunchSnoorpToEnemies (target) {
     const leftRightVals = util.adjustedForColVal(target);
     const newPos = this.getAttatchPosition(leftRightVals, target);
-    console.log("--------------addLaunchSnoorpToEnemies-------------");
-    console.log(`target => row: ${target.row}, col: ${target.col}`);
-    console.log(`placement => row: ${newPos.row}, col: ${newPos.col}`);
     this.launchSnoorp.col = newPos.col;
     this.launchSnoorp.row = newPos.row;
 
@@ -183,28 +180,23 @@ class Board {
   }
 
   getAttatchPosition (lr, target) {
-    console.log("--------------- getAttatchPosition ---------------");
-    console.log(`launch.x: ${this.launchSnoorp.x}, launch.y: ${this.launchSnoorp.y}`);
-    console.log(`target.x: ${target.x}, target.y: ${target.y}`);
     let col, row;
     let rightish = this.launchSnoorp.x - target.x > 0;
     if (this.launchSnoorp.y - target.y > 10) {
       col = target.col + 1;  // below
-      console.log(`set below, new col value is ${col}`);
     } else if ((this.launchSnoorp.y - target.y <= 10 &&
                this.launchSnoorp.y - target.y >= -10 )||
                 target.col > 0)  {
       col = target.col;      // on the same level
-      row = rightish ? target.x + 1 : target.x - 1;
-      console.log(`set on level, new col value is ${col}`);
-      console.log(`rightish value: ${rightish}, row set to ${row}`);
+      row = rightish ? target.row + 1 : target.col - 1;
     } else {
       col = target.col - 1;  // above
-      console.log(`set above, new col value is ${col}`);
     }
 
-    row = (!row && rightish) ? lr.right : lr.left;
-    console.log(`row val set by 'adjustedForColVal' to: ${row}`);
+    if (!row) {
+      row = rightish ? lr.right : lr.left;
+    }
+
 
     return {col: col, row: row};
   }

@@ -1,18 +1,13 @@
 class Util {
   adjustedForColVal (target) {
-    console.log("---------------- adjustedForColVal ---------------");
     var left, right;
     if (target.col % 2 === 0) {
 
       left = target.row;
       right = target.row + 1;
-      console.log(`even row target detected`);
-      console.log(`left: ${left}, right: ${right} set for launchSnoorp`);
     } else {
       left = target.row - 1;
       right = target.row;
-      console.log(`odd row target detected`);
-      console.log(`left: ${left}, right: ${right} set for launchSnoorp`);
     }
 
     return {left: left, right: right};
