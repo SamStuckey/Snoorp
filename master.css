@@ -125,6 +125,6 @@ li {
 }
 
 a {
-  font-style: none;
   font-size: 30px;
+  text-decoration: none;
 }
