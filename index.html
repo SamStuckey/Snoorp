@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script src="https://use.fontawesome.com/bda10032e5.js"></script>
+
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="master.css">
     <title>Snoorp</title>
@@ -16,18 +18,7 @@
 
   <h3>Thanks for playing</h3>
   <img src="./images/snoorp.png"/>
-  <p>by <strong>Sam Stuckey</strong></p>
-  <ul>
-    <li>
-      <a href="http://github.com/SamStuckey" value="github">github</a>
-    </li>
-    <li>
-      <a href="http://www.linkedin.com/in/sam-stuckey-9b290692">linkedin</a></li>
-      <li>
-        <a href="http://www.samstuckey.me">website</a>
-      </li>
-    </ul>
-
+  <p> Aim with the arrow keys spacebar to fire! </p>
   </div>
   <div class="game-canvas">
     <canvas id="gameCanvas" width="725" height="700"></canvas>
@@ -36,14 +27,27 @@
     <canvas id="scoreCanvas" width="200" height="120"></canvas>
   </div>
 
-  <div class="instructions">
-    <h3>How to play</h3>
+  <ul class="links">
+    <p>by <strong>Sam Stuckey</strong></p>
+    <li>
+      <a href="http://github.com/SamStuckey" value="github">github <i class="fa fa-github" aria-hidden="true"></i></a>
+    </li>
+    <li>
+      <a href="http://www.linkedin.com/in/sam-stuckey-9b290692">linkedin <i class="fa fa-linkedin-square" aria-hidden="true"></i>
+</a></li>
+      <li>
+        <a href="http://www.samstuckey.me">website <i class="fa fa-globe" aria-hidden="true"></i>
+</a>
+      </li>
+    </ul>
+  <!-- <div class="instructions"> -->
+    <!-- <h3>How to play</h3>
     <ul>
       <li>⬅️  to aim left</li>
       <li>➡️  to aim right</li>
       <li>spacebar to fire!</li>
-    </ul>
-  </div>
+    </ul> -->
+  <!-- </div> -->
 
   <button id="reset"><img class="reset-text" src="images/reset_text.png"/></button>
   <img class="plank-button" src="images/wood.png"></img>
