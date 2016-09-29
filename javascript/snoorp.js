@@ -12,7 +12,7 @@ pink.src = "images/pink.png";
 const orange = new Image();
 orange.src = "images/orange.png";
 
-const COLORS = [green, blue, pink];//, orange];
+const COLORS = [green, blue, pink, orange];
 const util = new Util();
 
 const remainingColors = [];

@@ -545,6 +545,8 @@
 	      var collision = false;
 	      // collision with other snoorp
 	      if (this.launchSnoorp.launched && this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
+	        console.log("collision detected launchSnoorp:");
+	        console.log(this.launchSnoorp);
 	        this.addLaunchSnoorpToEnemies(target);
 	        collision = true;
 	        // collision with the ceiling
@@ -645,6 +647,10 @@
 	  }, {
 	    key: 'getAttatchPosition',
 	    value: function getAttatchPosition(lr, target) {
+	
+	      console.log('launchSnoorp before:');
+	      console.log(this.launchSnoorp);
+	
 	      var col = void 0,
 	          row = void 0;
 	      var rightish = this.launchSnoorp.x - target.x > 0;
@@ -660,6 +666,15 @@
 	      if (!row) {
 	        row = rightish ? lr.right : lr.left;
 	      }
+	      console.log('launchSnoorp: ');
+	      console.log(this.launchSnoorp);
+	      console.log('target: ');
+	      console.log(target);
+	      console.log('lr: ');
+	      console.log(lr);
+	      console.log('rightish: ' + rightish);
+	      console.log('new col: ' + col);
+	      console.log('new row: ' + row);
 	
 	      return { col: col, row: row };
 	    }
@@ -748,6 +763,14 @@
 	        alive: true
 	      });
 	      this.launchSnoorp = newLaunchSnoorp;
+	      console.log(" ");
+	      console.log(" ");
+	      console.log("---------------------------------------");
+	      console.log("---------------new shot----------------");
+	      console.log("---------------------------------------");
+	      console.log("new launch snoorp: ");
+	      console.log(newLaunchSnoorp);
+	      console.log(" ");
 	      this.cannon.resetLaunch(newLaunchSnoorp);
 	    }
 	  }]);
@@ -781,7 +804,7 @@
 	var orange = new Image();
 	orange.src = "images/orange.png";
 	
-	var COLORS = [green, blue, pink]; //, orange];
+	var COLORS = [green, blue, pink, orange];
 	var util = new Util();
 	
 	var remainingColors = [];
