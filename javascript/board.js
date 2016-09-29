@@ -47,6 +47,7 @@ class Board {
   addLaunchSnoorpToEnemies (target) {
     const leftRightVals = util.adjustedForColVal(target);
     const newPos = this.getAttatchPosition(leftRightVals, target);
+
     this.launchSnoorp.col = newPos.col;
     this.launchSnoorp.row = newPos.row;
 
@@ -85,12 +86,10 @@ class Board {
       this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize &&
       this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize
     ) {
-      console.log("collision detected launchSnoorp:");
-      console.log(this.launchSnoorp);
       this.addLaunchSnoorpToEnemies(target);
       collision = true;
-      // collision with the ceiling
     } else if (
+      // collision with the ceiling
       (this.launchSnoorp.y - this.snoorpSize) + 1 <= (0 + this.downShift)
     ) {
       // avoid overlapping snood placement
@@ -182,10 +181,7 @@ class Board {
   }
 
   getAttatchPosition (lr, target) {
-
-    console.log(`launchSnoorp before:`);
-    console.log(this.launchSnoorp);
-
+    // debugger
     let col, row;
     let rightish = this.launchSnoorp.x - target.x > 0;
     if (this.launchSnoorp.y - target.y > 10) {
@@ -194,7 +190,7 @@ class Board {
                this.launchSnoorp.y - target.y >= -10 )||
                 target.col > 0)  {
       col = target.col;      // on the same level
-      row = rightish ? target.row + 1 : target.col - 1;
+      row = rightish ? target.row + 1 : target.row - 1;
     } else {
       col = target.col - 1;  // above
     }
@@ -202,17 +198,6 @@ class Board {
     if (!row) {
       row = rightish ? lr.right : lr.left;
     }
-    console.log(`launchSnoorp: `);
-    console.log(this.launchSnoorp);
-    console.log(`target: `);
-    console.log(target);
-    console.log(`lr: `);
-    console.log(lr);
-    console.log(`rightish: ${rightish}`);
-    console.log(`new col: ${col}`);
-    console.log(`new row: ${row}`);
-
-
 
     return {col: col, row: row};
   }
@@ -287,14 +272,6 @@ class Board {
       alive: true
     });
     this.launchSnoorp = newLaunchSnoorp;
-    console.log(" ");
-    console.log(" ");
-    console.log("---------------------------------------");
-    console.log("---------------new shot----------------");
-    console.log("---------------------------------------");
-    console.log("new launch snoorp: ");
-    console.log(newLaunchSnoorp);
-    console.log(" ");
     this.cannon.resetLaunch(newLaunchSnoorp);
   }
 }

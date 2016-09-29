@@ -511,6 +511,7 @@
 	    value: function addLaunchSnoorpToEnemies(target) {
 	      var leftRightVals = util.adjustedForColVal(target);
 	      var newPos = this.getAttatchPosition(leftRightVals, target);
+	
 	      this.launchSnoorp.col = newPos.col;
 	      this.launchSnoorp.row = newPos.row;
 	
@@ -545,12 +546,11 @@
 	      var collision = false;
 	      // collision with other snoorp
 	      if (this.launchSnoorp.launched && this.launchSnoorp.x + this.snoorpSize > target.x - this.snoorpSize && this.launchSnoorp.x - this.snoorpSize < target.x + this.snoorpSize && this.launchSnoorp.y + this.snoorpSize > target.y - this.snoorpSize && this.launchSnoorp.y - this.snoorpSize < target.y + this.snoorpSize) {
-	        console.log("collision detected launchSnoorp:");
-	        console.log(this.launchSnoorp);
 	        this.addLaunchSnoorpToEnemies(target);
 	        collision = true;
-	        // collision with the ceiling
-	      } else if (this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
+	      } else if (
+	      // collision with the ceiling
+	      this.launchSnoorp.y - this.snoorpSize + 1 <= 0 + this.downShift) {
 	        // avoid overlapping snood placement
 	        var rowL = Math.floor(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
 	        var rowR = Math.round(this.launchSnoorp.x / (this.snoorpSize * 2) - 1);
@@ -647,10 +647,7 @@
 	  }, {
 	    key: 'getAttatchPosition',
 	    value: function getAttatchPosition(lr, target) {
-	
-	      console.log('launchSnoorp before:');
-	      console.log(this.launchSnoorp);
-	
+	      // debugger
 	      var col = void 0,
 	          row = void 0;
 	      var rightish = this.launchSnoorp.x - target.x > 0;
@@ -658,7 +655,7 @@
 	        col = target.col + 1; // below
 	      } else if (this.launchSnoorp.y - target.y <= 10 && this.launchSnoorp.y - target.y >= -10 || target.col > 0) {
 	        col = target.col; // on the same level
-	        row = rightish ? target.row + 1 : target.col - 1;
+	        row = rightish ? target.row + 1 : target.row - 1;
 	      } else {
 	        col = target.col - 1; // above
 	      }
@@ -666,15 +663,6 @@
 	      if (!row) {
 	        row = rightish ? lr.right : lr.left;
 	      }
-	      console.log('launchSnoorp: ');
-	      console.log(this.launchSnoorp);
-	      console.log('target: ');
-	      console.log(target);
-	      console.log('lr: ');
-	      console.log(lr);
-	      console.log('rightish: ' + rightish);
-	      console.log('new col: ' + col);
-	      console.log('new row: ' + row);
 	
 	      return { col: col, row: row };
 	    }
@@ -763,14 +751,6 @@
 	        alive: true
 	      });
 	      this.launchSnoorp = newLaunchSnoorp;
-	      console.log(" ");
-	      console.log(" ");
-	      console.log("---------------------------------------");
-	      console.log("---------------new shot----------------");
-	      console.log("---------------------------------------");
-	      console.log("new launch snoorp: ");
-	      console.log(newLaunchSnoorp);
-	      console.log(" ");
 	      this.cannon.resetLaunch(newLaunchSnoorp);
 	    }
 	  }]);
@@ -804,7 +784,7 @@
 	var orange = new Image();
 	orange.src = "images/orange.png";
 	
-	var COLORS = [green, blue, pink, orange];
+	var COLORS = [green, blue, pink]; //, orange];
 	var util = new Util();
 	
 	var remainingColors = [];
