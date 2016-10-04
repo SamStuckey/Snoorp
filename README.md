@@ -71,7 +71,7 @@ Once no more matching snoorps are returned, all the snoorps in the cluster will 
 After a collision there may be free floating snoorps that were not destroyed because they were not a color match,
 however they are no longer rooted to the ceiling of the board and need to be dropped.  To accomplish this another DFS is run, starting in the upper left corner of the board.  This creates a log of all anchored snoorps.  Each snoorp is then compared to the log of anchored snoorps and if they are not anchored then they are set to 'falling'.  This will accelerate their y value until they disappear and are removed from play.
 
-![Alt text](/images/falling.png?raw=true "Optional Title")
+![falling snoorps](/images/falling.png?raw=true "falling snorpsfa")
 
 ```js
 
