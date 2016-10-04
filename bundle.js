@@ -77,6 +77,8 @@
 	var Snoorp = __webpack_require__(5);
 	
 	var gameCanvas = document.getElementById("gameCanvas");
+	var canvasLeft = gameCanvas.offsetLeft;
+	var canvasTop = gameCanvas.offsetTop;
 	var scoreCanvas = document.getElementById("scoreCanvas");
 	var resetButton = document.getElementById('reset');
 	
@@ -90,6 +92,12 @@
 	var lossImage = new Image();
 	lossImage.src = "./images/loss_text.png";
 	
+	var board = new Image();
+	board.src = './images/wood.png';
+	
+	var playAgain = new Image();
+	playAgain.src = './images/play_again.png';
+	
 	var score = 0;
 	var numShots = 0;
 	
@@ -97,7 +105,6 @@
 	  function Game() {
 	    _classCallCheck(this, Game);
 	
-	    // document.activeElement.blur();
 	    this.launchSnoorp = this.newSnoorp();
 	    this.cannon = this.newCannon();
 	    this.board = this.newBoard();
@@ -155,6 +162,10 @@
 	      } else {
 	        ctx.drawImage(lossImage, 20, 150);
 	      }
+	      ctx.drawImage(board, 220, 400, 300, 150);
+	      ctx.drawImage(playAgain, 250, 430);
+	
+	      gameCanvas.addEventListener('click', this.resetGame.bind(this));
 	    }
 	  }, {
 	    key: 'resetGame',

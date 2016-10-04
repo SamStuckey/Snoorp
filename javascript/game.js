@@ -4,6 +4,8 @@ const Snoorp = require('./snoorp');
 
 
 const gameCanvas = document.getElementById("gameCanvas");
+const canvasLeft = gameCanvas.offsetLeft;
+const canvasTop = gameCanvas.offsetTop;
 const scoreCanvas = document.getElementById("scoreCanvas");
 const resetButton = document.getElementById('reset');
 
@@ -17,12 +19,16 @@ winImage.src = "./images/win_text.png";
 const lossImage = new Image();
 lossImage.src = "./images/loss_text.png";
 
+const board = new Image();
+board.src = './images/wood.png';
+
+const playAgain = new Image();
+playAgain.src = './images/play_again.png';
 
 let score = 0;
 let numShots = 0;
 class Game {
   constructor () {
-    // document.activeElement.blur();
     this.launchSnoorp = this.newSnoorp();
     this.cannon = this.newCannon();
     this.board = this.newBoard();
@@ -74,6 +80,10 @@ class Game {
     } else {
       ctx.drawImage(lossImage, 20, 150);
     }
+    ctx.drawImage(board, 220, 400, 300, 150);
+    ctx.drawImage(playAgain, 250, 430);
+
+    gameCanvas.addEventListener('click', this.resetGame.bind(this));
   }
 
   resetGame () {
