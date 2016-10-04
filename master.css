@@ -53,15 +53,12 @@ canvas {
 }
 
 .links {
-  height: 130px;
+  height: 160px;
   width: 180px;
   display: block;
   float: right;
-  padding: 30px 10px;
+  padding: 20px 10px;
   text-align: center;
-  margin-top: 20px;
-
-
 }
 
 .welcome {
