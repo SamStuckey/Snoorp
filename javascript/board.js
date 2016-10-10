@@ -181,7 +181,6 @@ class Board {
   }
 
   getAttatchPosition (lr, target) {
-    // debugger
     let col, row;
     let rightish = this.launchSnoorp.x - target.x > 0;
     if (this.launchSnoorp.y - target.y > 10) {
