@@ -95,7 +95,6 @@ color: white;
 margin-top: 20px;
 font-size: 30px;
 float: right;
-/* text-align: center; */
 background: none;
 border: none;
 }
@@ -107,10 +106,6 @@ border: none;
   width: 200px;
   z-index: -1;
   position: relative;
-}
-
-h3 {
-
 }
 
 ul {
